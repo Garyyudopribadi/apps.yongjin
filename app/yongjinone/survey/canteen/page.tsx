@@ -78,14 +78,17 @@ export default function CanteenSurvey() {
     console.log('Found participant:', participant)
 
     if (participant) {
-      // Check if already voted
-      if (participant.date_verified) {
-        setError('Anda sudah melakukan voting sebelumnya.')
-        return
-      }
-
       setCurrentParticipant(participant)
       setStep('voting')
+      
+      // Pre-select their previous vote if they have one
+      if (participant.date_verified) {
+        if (participant.option_a) {
+          setSelectedOption('a')
+        } else if (participant.option_b) {
+          setSelectedOption('b')
+        }
+      }
     } else {
       setError('Data tidak ditemukan. Silakan periksa kembali NIK atau nomor KTP Anda.')
     }

@@ -10,6 +10,7 @@ interface Participant {
   name: string
   department: string
   sex: string
+  date_verified?: string | null
 }
 
 interface ParticipantInfoProps {
@@ -32,6 +33,11 @@ export default function ParticipantInfo({ participant }: ParticipantInfoProps) {
           </CardTitle>
           <CardDescription className="text-xs sm:text-sm">
             Halo, {participant.name}!
+            {participant.date_verified && (
+              <span className="block text-amber-600 dark:text-amber-400 mt-1">
+                Anda sudah voting sebelumnya. Pilih ulang jika ingin mengubah pilihan.
+              </span>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="pb-2">

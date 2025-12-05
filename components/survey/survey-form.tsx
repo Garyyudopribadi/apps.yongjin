@@ -14,6 +14,8 @@ interface Participant {
   department: string
   sex: string
   date_verified: string | null
+  option_a: boolean | null
+  option_b: boolean | null
 }
 
 interface SurveyFormProps {
