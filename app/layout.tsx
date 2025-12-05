@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "PT.YONGJIN JAVASUKA GARMENT",
   description: "Dev by Garyyudo",
   keywords: ["YJ", "YONGJIN", "PT.YONGJIN JAVASUKA GARMENT", "Gary Yudo Pribadi"],
-  authors: [{ name: "Z.ai Team" }],
+  authors: [{ name: "Dev Garyudo" }],
   icons: {
     icon: "/icons/icon-128x128.png",
   },
