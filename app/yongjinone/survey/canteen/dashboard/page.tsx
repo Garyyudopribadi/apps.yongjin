@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@app/
 import { Button } from "@app/components/ui/button"
 import { Input } from "@app/components/ui/input"
 import DefaultBackground from "@app/components/layout/default-background"
-import { Users, Utensils, Download, ArrowLeft, Table, Armchair, ChevronLeft, ChevronRight } from "lucide-react"
+import { Users, Utensils, Download, ArrowLeft, Table, Armchair, ChevronLeft, ChevronRight, LogOut } from "lucide-react"
+import DashboardAccess from '@app/components/survey/dashboard-access'
 import { supabase } from "@app/lib/supabase"
 
 interface SurveyData {
@@ -36,6 +37,17 @@ export default function Dashboard() {
 
 	const [currentPage, setCurrentPage] = useState(1)
 	const [itemsPerPage] = useState(10)
+
+	const [isAuthenticated, setIsAuthenticated] = useState(false)
+	const [passkey, setPasskey] = useState('')
+	const [dashboardError, setDashboardError] = useState('')
+
+	useEffect(() => {
+		const authStatus = document.cookie.split('; ').find(row => row.startsWith('dashboardAuthenticated='))?.split('=')[1]
+		if (authStatus === 'true') {
+			setIsAuthenticated(true)
+		}
+	}, [])
 
 	useEffect(() => {
 		const fetchDepartments = async () => {
@@ -193,7 +205,21 @@ export default function Dashboard() {
 	}
 
 	const handleBack = () => {
-		window.location.href = "/yongjinone/survey/canteen"
+		setIsAuthenticated(false)
+		document.cookie = 'dashboardAuthenticated=; path=/; max-age=0'
+		setPasskey('')
+		setDashboardError('')
+		window.location.href = '/yongjinone/survey/canteen'
+	}
+
+	const handleAccess = () => {
+		if (passkey === '0000') {
+			setIsAuthenticated(true)
+			document.cookie = 'dashboardAuthenticated=true; path=/; max-age=3600'
+			setDashboardError('')
+		} else {
+			setDashboardError('Passkey salah.')
+		}
 	}
 
 	const total = totalRecords
@@ -248,7 +274,7 @@ export default function Dashboard() {
 							<p className="text-sm text-slate-600">Hasil voting fasilitas kantin</p>
 						</div>
 						<div className="flex gap-2">
-							<Button variant="outline" onClick={handleBack} className="flex items-center gap-2"><ArrowLeft className="w-4 h-4" />Back</Button>
+							<Button variant="outline" onClick={handleBack} className="flex items-center gap-2"><LogOut className="w-4 h-4" />Logout</Button>
 						</div>
 					</div>
 				</motion.div>

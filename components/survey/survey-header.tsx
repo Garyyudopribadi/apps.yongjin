@@ -14,7 +14,7 @@ export default function SurveyHeader() {
         <Utensils className="w-6 h-6 sm:w-8 sm:h-8" />
       </div>
       <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-1">
-        Survey Kantin Yongjinone
+        Survey Kantin Yongjin
       </h1>
       <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
         Pilih fasilitas kantin pilihan Anda

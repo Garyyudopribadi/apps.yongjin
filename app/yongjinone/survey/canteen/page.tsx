@@ -60,9 +60,19 @@ export default function CanteenSurvey() {
     console.log('Participants count:', participants.length)
     console.log('Participants data:', participants)
     
-    const participant = participants.find(
-      p => p.nik.toLowerCase() === trimmedInput.toLowerCase() || p.ktp.toLowerCase() === trimmedInput.toLowerCase()
-    )
+    const participant = participants.find(p => {
+      const lowerInput = trimmedInput.toLowerCase()
+      const lowerNik = p.nik.toLowerCase()
+      const lowerKtp = p.ktp.toLowerCase()
+      
+      // Check full match for NIK or KTP
+      if (lowerNik === lowerInput || lowerKtp === lowerInput) return true
+      
+      // For NIK, allow last 6 digits if NIK starts with "YJ1_"
+      if (lowerInput.length === 6 && /^\d{6}$/.test(lowerInput) && lowerNik === 'yj1_' + lowerInput) return true
+      
+      return false
+    })
     
     console.log('Found participant:', participant)
 
@@ -127,6 +137,7 @@ export default function CanteenSurvey() {
   const handleDashboardAccess = () => {
     setDashboardError('')
     if (passkey === '0000') {
+      document.cookie = 'dashboardAuthenticated=true; path=/; max-age=3600'
       // Redirect to dashboard
       window.location.href = '/yongjinone/survey/canteen/dashboard'
     } else {
