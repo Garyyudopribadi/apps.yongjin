@@ -33,16 +33,45 @@ export default function CanteenSurvey() {
     // Fetch all participants from Supabase for verification
     const fetchParticipants = async () => {
       setIsLoadingParticipants(true)
-      const { data, error } = await supabase
-        .from('survey_kantin_yongjinone')
-        .select('*')
-        .order('id', { ascending: false })
-      if (error) {
-        console.error('Error fetching participants:', error)
-        setIsLoadingParticipants(false)
-      } else {
+      try {
+        const { data, error } = await supabase
+          .from('survey_kantin_yongjinone')
+          .select('*')
+          .order('id', { ascending: false })
+
+        if (error) {
+          console.error('Error fetching participants (supabase response):', error)
+          console.error('Error details:', JSON.stringify(error, null, 2))
+          console.error('Error message:', error.message)
+          console.error('Error code:', error.code)
+          console.error('Error hint:', error.hint)
+          console.error('Error details field:', error.details)
+          // Try diagnostic server-side check
+          try {
+            const res = await fetch('/api/supabase-test')
+            const json = await res.json()
+            console.warn('Supabase-test API response:', json)
+          } catch (apiErr) {
+            console.warn('Error calling /api/supabase-test:', apiErr)
+          }
+          setParticipants([])
+          setIsLoadingParticipants(false)
+          return
+        }
+
         console.log('Fetched participants for verification:', data?.length || 0)
         setParticipants(data || [])
+        setIsLoadingParticipants(false)
+      } catch (err) {
+        console.error('Error fetching participants (exception):', err)
+        try {
+          const res = await fetch('/api/supabase-test')
+          const json = await res.json()
+          console.warn('Supabase-test API response:', json)
+        } catch (apiErr) {
+          console.warn('Error calling /api/supabase-test:', apiErr)
+        }
+        setParticipants([])
         setIsLoadingParticipants(false)
       }
     }
