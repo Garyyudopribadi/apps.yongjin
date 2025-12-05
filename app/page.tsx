@@ -19,6 +19,7 @@ const menuItems: MenuItem[] = [
     features: ["Company Information", "Products", "Contact Details", "Corporate News"],
     color: "from-blue-500 to-cyan-500",
     gradient: "from-blue-50 to-cyan-50",
+    href: "https://yongjin.space/",
     stats: [
       { label: "Established", value: "2020" },
       { label: "Employees", value: "500+" },
@@ -33,6 +34,7 @@ const menuItems: MenuItem[] = [
     features: ["Employee Portal", "Internal Tools", "Resource Management", "Communication"],
     color: "from-blue-500 to-white-500",
     gradient: "from-blue-50 to-white-50",
+    href: "https://app.yongjin.space/",
     stats: [
       { label: "Users", value: "200+" },
       { label: "Modules", value: "15+" },
