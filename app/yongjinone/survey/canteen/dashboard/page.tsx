@@ -27,12 +27,14 @@ export default function Dashboard() {
 	const [isLoading, setIsLoading] = useState(true)
 	const [totalRecords, setTotalRecords] = useState(0)
 	const [searchTerm, setSearchTerm] = useState('')
+	const [inputValue, setInputValue] = useState('')
 	const [verifiedFilter, setVerifiedFilter] = useState<'all' | 'verified' | 'unverified'>('all')
 	const [departmentFilter, setDepartmentFilter] = useState<string>('all')
 	const [totalVoted, setTotalVoted] = useState(0)
 	const [totalNotVoted, setTotalNotVoted] = useState(0)
 	const [optionA, setOptionA] = useState(0)
 	const [optionB, setOptionB] = useState(0)
+	const [totalEmployees, setTotalEmployees] = useState(0)
 	const [departments, setDepartments] = useState<string[]>([])
 
 	const [currentPage, setCurrentPage] = useState(1)
@@ -41,6 +43,13 @@ export default function Dashboard() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false)
 	const [passkey, setPasskey] = useState('')
 	const [dashboardError, setDashboardError] = useState('')
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setSearchTerm(inputValue)
+		}, 500)
+		return () => clearTimeout(timer)
+	}, [inputValue])
 
 	useEffect(() => {
 		const authStatus = document.cookie.split('; ').find(row => row.startsWith('dashboardAuthenticated='))?.split('=')[1]
@@ -116,6 +125,12 @@ export default function Dashboard() {
 	useEffect(() => {
 		const fetchStatistics = async () => {
 			try {
+				// Count total employees
+				const { count: totalEmployeesCount } = await supabase
+					.from('survey_kantin_yongjinone')
+					.select('*', { count: 'exact', head: true })
+				setTotalEmployees(totalEmployeesCount || 0)
+
 				// Count total voted (date_verified is not null)
 				const { count: votedCount } = await supabase
 					.from('survey_kantin_yongjinone')
@@ -222,7 +237,7 @@ export default function Dashboard() {
 		}
 	}
 
-	const total = totalRecords
+	const total = totalEmployees
 	const percentageA = total > 0 ? (optionA / total) * 100 : 0
 	const percentageB = total > 0 ? (optionB / total) * 100 : 0
 	const percentageVoted = total > 0 ? (totalVoted / total) * 100 : 0
@@ -378,8 +393,8 @@ export default function Dashboard() {
 								<label className="block text-sm font-medium mb-2">Search</label>
 								<Input
 									placeholder="Search by name, NIK, or KTP..."
-									value={searchTerm}
-									onChange={(e) => setSearchTerm(e.target.value)}
+									value={inputValue}
+									onChange={(e) => setInputValue(e.target.value)}
 								/>
 							</div>
 							<div>
@@ -409,6 +424,7 @@ export default function Dashboard() {
 							</div>
 							<div className="flex items-end gap-2">
 								<Button variant="outline" onClick={() => {
+									setInputValue('')
 									setSearchTerm('')
 									setVerifiedFilter('all')
 									setDepartmentFilter('all')

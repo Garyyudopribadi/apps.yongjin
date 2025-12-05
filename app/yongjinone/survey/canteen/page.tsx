@@ -54,33 +54,93 @@ export default function CanteenSurvey() {
       setError('Sedang memuat data, silakan tunggu sebentar...')
       return
     }
-    
+
     setError('')
     const trimmedInput = inputValue.trim()
-    console.log('Input value:', trimmedInput)
+    const normalizedInput = (trimmedInput || '').toLowerCase()
+    const digitInput = (trimmedInput || '').replace(/\D/g, '')
+
+    console.log('Validate input:', { trimmedInput, normalizedInput, digitInput })
     console.log('Participants count:', participants.length)
-    console.log('Participants data:', participants)
-    
-    const participant = participants.find(p => {
-      const lowerInput = trimmedInput.toLowerCase()
-      const lowerNik = p.nik.toLowerCase()
-      const lowerKtp = p.ktp.toLowerCase()
-      
-      // Check full match for NIK or KTP
-      if (lowerNik === lowerInput || lowerKtp === lowerInput) return true
-      
-      // For NIK, allow last 6 digits if NIK starts with "YJ1_"
-      if (lowerInput.length === 6 && /^\d{6}$/.test(lowerInput) && lowerNik === 'yj1_' + lowerInput) return true
-      
+
+    const normalizeField = (v: any) => (v === null || v === undefined) ? '' : String(v).toLowerCase()
+    const normalizeAlnum = (v: any) => normalizeField(v).replace(/[^a-z0-9]/g, '')
+    const normalizeDigits = (v: any) => (v === null || v === undefined) ? '' : String(v).replace(/\D/g, '')
+
+    // Try in-memory find first (fast UX). Use several tolerant match rules.
+    let participant = participants.find(p => {
+      const nikStr = normalizeField(p.nik)
+      const ktpStr = normalizeField(p.ktp)
+      const nikAlnum = normalizeAlnum(p.nik)
+      const ktpAlnum = normalizeAlnum(p.ktp)
+      const nikDigits = normalizeDigits(p.nik)
+      const ktpDigits = normalizeDigits(p.ktp)
+
+      console.log('Checking participant:', { nik: p.nik, ktp: p.ktp })
+
+      // Exact (case-insensitive) full match
+      if (nikStr === normalizedInput || ktpStr === normalizedInput) return true
+
+      // Alphanumeric-equal (ignore separators like underscore/dash)
+      if (nikAlnum === normalizedInput.replace(/[^a-z0-9]/g, '') || ktpAlnum === normalizedInput.replace(/[^a-z0-9]/g, '')) return true
+
+      // If input is digits (user typed last digits), match suffix of nik/ktp digits
+      if (digitInput.length >= 4) {
+        if (nikDigits.endsWith(digitInput) || ktpDigits.endsWith(digitInput)) return true
+      }
+
       return false
     })
-    
-    console.log('Found participant:', participant)
+
+    console.log('In-memory search result:', participant)
+
+    // If not found in-memory, do server-side fallback queries for reliability
+    if (!participant) {
+      try {
+        // 1) exact equality by nik
+        if (trimmedInput) {
+          let { data: exactNik, error: errNik } = await supabase
+            .from('survey_kantin_yongjinone')
+            .select('*')
+            .eq('nik', trimmedInput)
+            .limit(1)
+
+          if (errNik) console.warn('Supabase exact nik error', errNik)
+          if (exactNik && exactNik.length > 0) participant = exactNik[0]
+
+          // 2) exact equality by ktp
+          if (!participant) {
+            const { data: exactKtp, error: errKtp } = await supabase
+              .from('survey_kantin_yongjinone')
+              .select('*')
+              .eq('ktp', trimmedInput)
+              .limit(1)
+            if (errKtp) console.warn('Supabase exact ktp error', errKtp)
+            if (exactKtp && exactKtp.length > 0) participant = exactKtp[0]
+          }
+
+          // 3) if still not found and we have digits, try searching by digit suffix (like)
+          if (!participant && digitInput && digitInput.length >= 4) {
+            const { data: likeNik, error: errLikeNik } = await supabase
+              .from('survey_kantin_yongjinone')
+              .select('*')
+              .like('nik', `%${digitInput}`)
+              .limit(1)
+            if (errLikeNik) console.warn('Supabase like nik error', errLikeNik)
+            if (likeNik && likeNik.length > 0) participant = likeNik[0]
+          }
+        }
+      } catch (err) {
+        console.error('Error during server-side fallback lookup:', err)
+      }
+
+      console.log('Server-side fallback result:', participant)
+    }
 
     if (participant) {
       setCurrentParticipant(participant)
       setStep('voting')
-      
+
       // Pre-select their previous vote if they have one
       if (participant.date_verified) {
         if (participant.option_a) {
