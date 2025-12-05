@@ -13,6 +13,7 @@ import SurveyHeader from '@app/components/survey/survey-header'
 import DashboardButton from '@app/components/survey/dashboard-button'
 import DashboardAccess from '@app/components/survey/dashboard-access'
 import { supabase } from '@app/lib/supabase'
+import { AlertCircle } from 'lucide-react'
 
 export default function CanteenSurvey() {
   const [inputValue, setInputValue] = useState('')
@@ -100,30 +101,32 @@ export default function CanteenSurvey() {
     if (!selectedOption || !currentParticipant) return
 
     setIsSubmitting(true)
+    setError('')
 
-    const surveyEntry = {
-      nik: currentParticipant.nik,
-      ktp: currentParticipant.ktp,
-      name: currentParticipant.name,
-      department: currentParticipant.department,
-      sex: currentParticipant.sex,
-      option_a: selectedOption === 'a',
-      option_b: selectedOption === 'b',
-      date_verified: new Date().toISOString()
-    }
+    try {
+      const surveyUpdate = {
+        option_a: selectedOption === 'a',
+        option_b: selectedOption === 'b',
+        date_verified: new Date().toISOString()
+      }
 
-    const { error } = await supabase
-      .from('survey_kantin_yongjinone')
-      .insert([surveyEntry])
+      const { error } = await supabase
+        .from('survey_kantin_yongjinone')
+        .update(surveyUpdate)
+        .eq('id', currentParticipant.id)
 
-    if (error) {
-      setError('Error submitting vote. Please try again.')
+      if (error) {
+        console.error('Supabase update error:', error)
+        setError('Error submitting vote. Please try again.')
+      } else {
+        setStep('success')
+      }
+    } catch (err) {
+      console.error('Unexpected error during submit:', err)
+      setError('Unexpected error occurred. Please try again.')
+    } finally {
       setIsSubmitting(false)
-      return
     }
-
-    setIsSubmitting(false)
-    setStep('success')
   }
 
   const resetForm = () => {
@@ -173,6 +176,16 @@ export default function CanteenSurvey() {
                 onVote={handleVote}
                 isSubmitting={isSubmitting}
               />
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+                >
+                  <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm text-red-700 dark:text-red-400">{error}</span>
+                </motion.div>
+              )}
               <SubmitButton
                 selectedOption={selectedOption}
                 isSubmitting={isSubmitting}
