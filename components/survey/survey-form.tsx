@@ -83,7 +83,10 @@ export default function SurveyForm({
               className="w-full text-sm sm:text-base"
             />
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Contoh: YJ1_000143 atau 3202162408820003
+              Contoh: YJ1_xxxxxx / xxxxxx (6 digit terakhir)
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              untuk KTP tetap input full ID-nya
             </p>
           </div>
           

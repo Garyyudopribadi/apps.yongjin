@@ -58,6 +58,7 @@ export default function CanteenSurvey() {
     setError('')
     const trimmedInput = inputValue.trim()
     const normalizedInput = (trimmedInput || '').toLowerCase()
+    const normalizedAlnumInput = normalizedInput.replace(/[^a-z0-9]/g, '')
     const digitInput = (trimmedInput || '').replace(/\D/g, '')
 
     console.log('Validate input:', { trimmedInput, normalizedInput, digitInput })
@@ -79,14 +80,15 @@ export default function CanteenSurvey() {
       console.log('Checking participant:', { nik: p.nik, ktp: p.ktp })
 
       // Exact (case-insensitive) full match
+
       if (nikStr === normalizedInput || ktpStr === normalizedInput) return true
 
       // Alphanumeric-equal (ignore separators like underscore/dash)
-      if (nikAlnum === normalizedInput.replace(/[^a-z0-9]/g, '') || ktpAlnum === normalizedInput.replace(/[^a-z0-9]/g, '')) return true
+      if (nikAlnum === normalizedAlnumInput || ktpAlnum === normalizedAlnumInput) return true
 
-      // If input is digits (user typed last digits), match suffix of nik/ktp digits
-      if (digitInput.length >= 4) {
-        if (nikDigits.endsWith(digitInput) || ktpDigits.endsWith(digitInput)) return true
+      // If input is exactly 6 digits, match suffix of NIK digits only (KTP requires full match)
+      if (digitInput.length === 6) {
+        if (nikDigits.endsWith(digitInput)) return true
       }
 
       return false
@@ -97,34 +99,34 @@ export default function CanteenSurvey() {
     // If not found in-memory, do server-side fallback queries for reliability
     if (!participant) {
       try {
-        // 1) exact equality by nik
+        // 1) exact equality by nik (case-insensitive)
         if (trimmedInput) {
           let { data: exactNik, error: errNik } = await supabase
             .from('survey_kantin_yongjinone')
             .select('*')
-            .eq('nik', trimmedInput)
+            .ilike('nik', trimmedInput)
             .limit(1)
 
           if (errNik) console.warn('Supabase exact nik error', errNik)
           if (exactNik && exactNik.length > 0) participant = exactNik[0]
 
-          // 2) exact equality by ktp
+          // 2) exact equality by ktp (case-insensitive, though KTP is usually numeric)
           if (!participant) {
             const { data: exactKtp, error: errKtp } = await supabase
               .from('survey_kantin_yongjinone')
               .select('*')
-              .eq('ktp', trimmedInput)
+              .ilike('ktp', trimmedInput)
               .limit(1)
             if (errKtp) console.warn('Supabase exact ktp error', errKtp)
             if (exactKtp && exactKtp.length > 0) participant = exactKtp[0]
           }
 
-          // 3) if still not found and we have digits, try searching by digit suffix (like)
+          // 3) if still not found and we have digits, try searching by digit suffix (case-insensitive)
           if (!participant && digitInput && digitInput.length >= 4) {
             const { data: likeNik, error: errLikeNik } = await supabase
               .from('survey_kantin_yongjinone')
               .select('*')
-              .like('nik', `%${digitInput}`)
+              .ilike('nik', `%${digitInput}`)
               .limit(1)
             if (errLikeNik) console.warn('Supabase like nik error', errLikeNik)
             if (likeNik && likeNik.length > 0) participant = likeNik[0]
