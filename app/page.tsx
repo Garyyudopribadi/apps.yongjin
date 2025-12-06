@@ -19,12 +19,7 @@ const menuItems: MenuItem[] = [
     features: ["Company Information", "Products", "Contact Details", "Corporate News"],
     color: "from-blue-500 to-cyan-500",
     gradient: "from-blue-50 to-cyan-50",
-    href: "https://yongjin.space/",
-    stats: [
-      { label: "Established", value: "2020" },
-      { label: "Employees", value: "500+" },
-      { label: "Locations", value: "3" }
-    ]
+    href: "https://yongjin.space/"
   },
   {
     id: 2,
@@ -34,12 +29,7 @@ const menuItems: MenuItem[] = [
     features: ["Employee Portal", "Internal Tools", "Resource Management", "Communication"],
     color: "from-blue-500 to-white-500",
     gradient: "from-blue-50 to-white-50",
-    href: "https://app.yongjin.space/",
-    stats: [
-      { label: "Users", value: "200+" },
-      { label: "Modules", value: "15+" },
-      { label: "Uptime", value: "99.9%" }
-    ]
+    href: "https://app.yongjin.space/"
   },
   {
     id: 3,
@@ -49,12 +39,7 @@ const menuItems: MenuItem[] = [
     features: ["Voting System", "Real-time Results", "Data Export", "Employee Feedback"],
     color: "from-green-500 to-emerald-500",
     gradient: "from-green-50 to-emerald-50",
-    href: "/yongjinone/survey/canteen",
-    stats: [
-      { label: "Participants", value: "150+" },
-      { label: "Options", value: "2" },
-      { label: "Completion Rate", value: "95%" }
-    ]
+    href: "/yongjinone/survey/canteen"
   }
 ]
 
@@ -117,7 +102,7 @@ export default function Home() {
               <div className="absolute top-0 left-0 w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
             </div>
             <div className="text-center space-y-2">
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 via-blue-600 to-purple-600 dark:from-slate-100 dark:via-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+              <h1 className="text-3xl sm:text-4xl font-black bg-gradient-to-r from-slate-900 via-blue-600 to-purple-600 dark:from-slate-100 dark:via-blue-400 dark:to-purple-400 bg-clip-text text-transparent tracking-tight">
                 PT.YONGJIN JAVASUKA GARMENT
               </h1>
               <p className="text-muted-foreground">Loading amazing services and solutions...</p>
@@ -136,51 +121,97 @@ export default function Home() {
 
   return (
     <DefaultBackground showFooter={true}>
-      <Header>
-        <motion.h1 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold bg-gradient-to-r from-slate-900 via-blue-600 to-purple-600 dark:from-slate-100 dark:via-blue-400 dark:to-purple-400 bg-clip-text text-transparent mb-3 sm:mb-4 px-4"
-        >
-          PT.YONGJIN JAVASUKA GARMENT
-        </motion.h1>
-        <motion.p 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto px-4"
-        >
-          Discover amazing services and solutions to your needs
-        </motion.p>
-        
-        <ViewModeToggle 
-          viewMode={viewMode} 
-          onViewModeChange={handleViewModeChange} 
-        />
-      </Header>
+      <div className="flex flex-col items-center px-4 py-6">
+        <Header>
+          <motion.h1 
+            initial={{ opacity: 0, y: -30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ 
+              duration: 0.8, 
+              ease: [0.25, 0.46, 0.45, 0.94],
+              type: "spring",
+              stiffness: 100,
+              damping: 15
+            }}
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-slate-900 via-blue-600 to-purple-600 dark:from-slate-100 dark:via-blue-400 dark:to-purple-400 bg-clip-text text-transparent mb-2 sm:mb-3 px-4 tracking-tight"
+            style={{
+              textShadow: '0 0 30px rgba(59, 130, 246, 0.2)',
+              WebkitTextStroke: '0.5px rgba(255, 255, 255, 0.1)'
+            }}
+          >
+            PT.YONGJIN JAVASUKA GARMENT
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ 
+              duration: 0.8, 
+              delay: 0.2,
+              ease: [0.25, 0.46, 0.45, 0.94],
+              type: "spring",
+              stiffness: 120,
+              damping: 18
+            }}
+            className="text-sm sm:text-base md:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto px-4 font-medium leading-relaxed"
+          >
+            Discover amazing services and solutions to your needs
+          </motion.p>
+        </Header>
 
-      {/* Main Content */}
-      <main className="relative max-w-7xl mx-auto px-3 sm:px-4 pb-8 sm:pb-12">
-        {/* Carousel View */}
-        {viewMode === 'carousel' && (
-          <Carousel
-            items={menuItems}
-            currentIndex={currentIndex}
-            onPrev={handlePrev}
-            onNext={handleNext}
-            onCardAction={handleCardAction}
+        {/* View Mode Toggle - positioned near menu items */}
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ 
+            duration: 0.6, 
+            delay: 0.5,
+            ease: [0.25, 0.46, 0.45, 0.94],
+            type: "spring",
+            stiffness: 150,
+            damping: 18
+          }}
+          className="mb-6"
+        >
+          <ViewModeToggle 
+            viewMode={viewMode} 
+            onViewModeChange={handleViewModeChange} 
           />
-        )}
+        </motion.div>
 
-        {/* Grid View */}
-        {viewMode === 'grid' && (
-          <GridView
-            items={menuItems}
-            onCardAction={handleCardAction}
-          />
-        )}
-      </main>
+        {/* Main Content */}
+        <motion.main 
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ 
+            duration: 0.8, 
+            delay: 0.6,
+            ease: [0.25, 0.46, 0.45, 0.94],
+            type: "spring",
+            stiffness: 80,
+            damping: 20
+          }}
+          className="relative max-w-7xl mx-auto w-full"
+        >
+          {/* Carousel View */}
+          {viewMode === 'carousel' && (
+            <Carousel
+              items={menuItems}
+              currentIndex={currentIndex}
+              onPrev={handlePrev}
+              onNext={handleNext}
+              onCardAction={handleCardAction}
+            />
+          )}
+
+          {/* Grid View */}
+          {viewMode === 'grid' && (
+            <GridView
+              items={menuItems}
+              onCardAction={handleCardAction}
+            />
+          )}
+        </motion.main>
+      </div>
     </DefaultBackground>
   )
 }

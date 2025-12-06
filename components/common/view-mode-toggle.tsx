@@ -12,29 +12,37 @@ interface ViewModeToggleProps {
 export default function ViewModeToggle({ viewMode, onViewModeChange }: ViewModeToggleProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: -10 }}
+      initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.4 }}
-      className="flex justify-center mt-6"
+      className="flex justify-center"
     >
-      <div className="inline-flex rounded-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-1 border border-slate-200 dark:border-slate-700">
+      <div className="inline-flex rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 shadow-lg p-1">
         <Button
           variant={viewMode === 'carousel' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => onViewModeChange('carousel')}
-          className="px-3 py-2 text-xs sm:text-sm"
+          className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 ${
+            viewMode === 'carousel'
+              ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md'
+              : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100'
+          }`}
         >
-          <Layout className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">Carousel</span>
+          <Layout className="w-4 h-4 mr-2" />
+          Carousel
         </Button>
         <Button
           variant={viewMode === 'grid' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => onViewModeChange('grid')}
-          className="px-3 py-2 text-xs sm:text-sm"
+          className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 ${
+            viewMode === 'grid'
+              ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md'
+              : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100'
+          }`}
         >
-          <Grid className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">Grid</span>
+          <Grid className="w-4 h-4 mr-2" />
+          Grid
         </Button>
       </div>
     </motion.div>

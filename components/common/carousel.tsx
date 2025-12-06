@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@app/components/ui/button'
@@ -16,31 +16,68 @@ interface CarouselProps {
 
 export default function Carousel({ items, currentIndex, onPrev, onNext, onCardAction }: CarouselProps) {
   const [isHovered, setIsHovered] = useState(false)
+  const [direction, setDirection] = useState(0)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+
+  // Auto-play functionality
+  useEffect(() => {
+    if (!isAutoPlaying || isHovered) return
+
+    const interval = setInterval(() => {
+      setDirection(1)
+      onNext()
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [isAutoPlaying, isHovered, onNext])
 
   const cardVariants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? 1000 : -1000,
+      x: direction > 0 ? 300 : -300,
       opacity: 0,
-      scale: 0.8,
-      rotateY: direction > 0 ? 45 : -45
+      scale: 0.85,
+      rotateY: direction > 0 ? 25 : -25,
+      z: -150,
+      filter: "blur(4px)"
     }),
     center: {
-      zIndex: 1,
+      zIndex: 10,
       x: 0,
       opacity: 1,
       scale: 1,
-      rotateY: 0
+      rotateY: 0,
+      z: 0,
+      filter: "blur(0px)"
     },
     exit: (direction: number) => ({
       zIndex: 0,
-      x: direction < 0 ? 1000 : -1000,
+      x: direction < 0 ? 300 : -300,
       opacity: 0,
-      scale: 0.8,
-      rotateY: direction < 0 ? 45 : -45
+      scale: 0.85,
+      rotateY: direction < 0 ? 25 : -25,
+      z: -150,
+      filter: "blur(4px)"
     })
   }
 
-  const [direction, setDirection] = useState(0)
+  const sideCardVariants = {
+    left: {
+      x: -200,
+      scale: 0.75,
+      opacity: 0.4,
+      rotateY: -15,
+      z: -75,
+      filter: "blur(2px)"
+    },
+    right: {
+      x: 200,
+      scale: 0.75,
+      opacity: 0.4,
+      rotateY: 15,
+      z: -75,
+      filter: "blur(2px)"
+    }
+  }
 
   const handleNext = () => {
     setDirection(1)
@@ -52,96 +89,331 @@ export default function Carousel({ items, currentIndex, onPrev, onNext, onCardAc
     onPrev()
   }
 
+  const handleIndicatorClick = (index: number) => {
+    const diff = index - currentIndex
+    setDirection(diff > 0 ? 1 : -1)
+    for (let i = 0; i < Math.abs(diff); i++) {
+      setTimeout(() => {
+        if (diff > 0) onNext()
+        else onPrev()
+      }, i * 100)
+    }
+  }
+
+  const getPrevIndex = () => (currentIndex === 0 ? items.length - 1 : currentIndex - 1)
+  const getNextIndex = () => (currentIndex === items.length - 1 ? 0 : currentIndex + 1)
+
   return (
-    <div className="relative">
-      <div className="flex items-center justify-center">
-        <div className="relative w-full max-w-2xl sm:max-w-3xl h-[350px] sm:h-[400px] md:h-[450px] flex items-center justify-center perspective-1000">
-          <AnimatePresence initial={false} custom={direction}>
-            <motion.div
-              key={currentIndex}
-              custom={direction}
-              variants={cardVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.3 },
-                scale: { duration: 0.3 },
-                rotateY: { duration: 0.6 }
-              }}
-              className="absolute w-full px-4 sm:px-0"
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-            >
-              <MenuCard 
-                item={items[currentIndex]} 
-                onAction={() => onCardAction(items[currentIndex])}
-              />
-            </motion.div>
-          </AnimatePresence>
-        </div>
+    <div className="relative w-full max-w-6xl mx-auto">
+      {/* Main Carousel Container */}
+      <div 
+        className="relative h-[400px] sm:h-[420px] flex items-center justify-center perspective-1000"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {/* Side Cards */}
+        <motion.div
+          variants={sideCardVariants}
+          animate="left"
+          transition={{ 
+            duration: 0.8, 
+            ease: [0.25, 0.46, 0.45, 0.94],
+            type: "spring",
+            stiffness: 120,
+            damping: 25
+          }}
+          className="absolute w-full max-w-xs h-full"
+        >
+          <MenuCard 
+            item={items[getPrevIndex()]} 
+            onAction={() => onCardAction(items[getPrevIndex()])}
+          />
+        </motion.div>
+
+        {/* Center Card */}
+        <AnimatePresence initial={false} custom={direction}>
+          <motion.div
+            key={currentIndex}
+            custom={direction}
+            variants={cardVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { 
+                type: "spring", 
+                stiffness: 150, 
+                damping: 30,
+                mass: 0.8
+              },
+              opacity: { 
+                duration: 0.6,
+                ease: [0.25, 0.46, 0.45, 0.94]
+              },
+              scale: { 
+                duration: 0.6,
+                ease: [0.25, 0.46, 0.45, 0.94]
+              },
+              rotateY: { 
+                duration: 0.8,
+                ease: [0.25, 0.46, 0.45, 0.94]
+              },
+              filter: {
+                duration: 0.6,
+                ease: [0.25, 0.46, 0.45, 0.94]
+              }
+            }}
+            className="absolute w-full max-w-sm z-10 h-full"
+          >
+            <MenuCard 
+              item={items[currentIndex]} 
+              onAction={() => onCardAction(items[currentIndex])}
+            />
+          </motion.div>
+        </AnimatePresence>
+
+        <motion.div
+          variants={sideCardVariants}
+          animate="right"
+          transition={{ 
+            duration: 0.8, 
+            ease: [0.25, 0.46, 0.45, 0.94],
+            type: "spring",
+            stiffness: 120,
+            damping: 25
+          }}
+          className="absolute w-full max-w-xs h-full"
+        >
+          <MenuCard 
+            item={items[getNextIndex()]} 
+            onAction={() => onCardAction(items[getNextIndex()])}
+          />
+        </motion.div>
       </div>
 
-      {/* Navigation Buttons - Hidden on mobile */}
+      {/* Navigation Buttons */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 hidden sm:block"
+        initial={{ opacity: 0, x: -30, scale: 0.8 }}
+        animate={{ opacity: 1, x: 0, scale: 1 }}
+        transition={{ 
+          delay: 0.6,
+          duration: 0.6,
+          ease: [0.25, 0.46, 0.45, 0.94],
+          type: "spring",
+          stiffness: 200,
+          damping: 20
+        }}
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20"
       >
-        <Button
-          variant="outline"
-          size="icon"
-          className="bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+        <motion.button
           onClick={handlePrev}
-          onMouseEnter={() => setIsHovered(false)}
-          onMouseLeave={() => setIsHovered(true)}
+          whileHover={{ 
+            scale: 1.15,
+            rotate: -5,
+            transition: { 
+              duration: 0.3,
+              ease: [0.25, 0.46, 0.45, 0.94],
+              type: "spring",
+              stiffness: 300,
+              damping: 25
+            }
+          }}
+          whileTap={{ 
+            scale: 0.9,
+            rotate: -10,
+            transition: { duration: 0.1 }
+          }}
+          className="relative w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 shadow-xl hover:shadow-2xl transition-all duration-500 border-0 overflow-hidden group"
         >
-          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-        </Button>
+          {/* Enhanced glow effects */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-60 blur-lg transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {/* Rotating border effect */}
+          <motion.div
+            className="absolute inset-0 rounded-full border-2 border-white/30"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          />
+          
+          {/* Inner rotating border */}
+          <motion.div
+            className="absolute inset-1 rounded-full border border-white/20"
+            animate={{ rotate: -360 }}
+            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+          />
+          
+          {/* Icon container */}
+          <div className="relative z-10 w-full h-full flex items-center justify-center">
+            <ChevronLeft className="w-7 h-7 text-white drop-shadow-lg" />
+          </div>
+          
+          {/* Sparkle effects */}
+          <motion.div
+            className="absolute top-1 right-1 w-1.5 h-1.5 bg-white rounded-full"
+            animate={{ 
+              opacity: [0, 1, 0],
+              scale: [0.5, 1, 0.5]
+            }}
+            transition={{ 
+              duration: 2, 
+              repeat: Infinity,
+              delay: 0
+            }}
+          />
+          <motion.div
+            className="absolute bottom-1 left-1 w-1 h-1 bg-white rounded-full"
+            animate={{ 
+              opacity: [0, 1, 0],
+              scale: [0.5, 1, 0.5]
+            }}
+            transition={{ 
+              duration: 2, 
+              repeat: Infinity,
+              delay: 1
+            }}
+          />
+        </motion.button>
       </motion.div>
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 hidden sm:block"
+        initial={{ opacity: 0, x: 30, scale: 0.8 }}
+        animate={{ opacity: 1, x: 0, scale: 1 }}
+        transition={{ 
+          delay: 0.6,
+          duration: 0.6,
+          ease: [0.25, 0.46, 0.45, 0.94],
+          type: "spring",
+          stiffness: 200,
+          damping: 20
+        }}
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20"
       >
-        <Button
-          variant="outline"
-          size="icon"
-          className="bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+        <motion.button
           onClick={handleNext}
-          onMouseEnter={() => setIsHovered(false)}
-          onMouseLeave={() => setIsHovered(true)}
+          whileHover={{ 
+            scale: 1.15,
+            rotate: 5,
+            transition: { 
+              duration: 0.3,
+              ease: [0.25, 0.46, 0.45, 0.94],
+              type: "spring",
+              stiffness: 300,
+              damping: 25
+            }
+          }}
+          whileTap={{ 
+            scale: 0.9,
+            rotate: 10,
+            transition: { duration: 0.1 }
+          }}
+          className="relative w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 shadow-xl hover:shadow-2xl transition-all duration-500 border-0 overflow-hidden group"
         >
-          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-        </Button>
+          {/* Enhanced glow effects */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-60 blur-lg transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {/* Rotating border effect */}
+          <motion.div
+            className="absolute inset-0 rounded-full border-2 border-white/30"
+            animate={{ rotate: -360 }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          />
+          
+          {/* Inner rotating border */}
+          <motion.div
+            className="absolute inset-1 rounded-full border border-white/20"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+          />
+          
+          {/* Icon container */}
+          <div className="relative z-10 w-full h-full flex items-center justify-center">
+            <ChevronRight className="w-7 h-7 text-white drop-shadow-lg" />
+          </div>
+          
+          {/* Sparkle effects */}
+          <motion.div
+            className="absolute top-1 left-1 w-1.5 h-1.5 bg-white rounded-full"
+            animate={{ 
+              opacity: [0, 1, 0],
+              scale: [0.5, 1, 0.5]
+            }}
+            transition={{ 
+              duration: 2, 
+              repeat: Infinity,
+              delay: 0.5
+            }}
+          />
+          <motion.div
+            className="absolute bottom-1 right-1 w-1 h-1 bg-white rounded-full"
+            animate={{ 
+              opacity: [0, 1, 0],
+              scale: [0.5, 1, 0.5]
+            }}
+            transition={{ 
+              duration: 2, 
+              repeat: Infinity,
+              delay: 1.5
+            }}
+          />
+        </motion.button>
       </motion.div>
 
-      {/* Mobile Navigation Buttons */}
-      <div className="flex justify-between items-center mt-6 sm:hidden px-4">
+      {/* Indicators */}
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ 
+          delay: 0.8,
+          duration: 0.6,
+          ease: [0.25, 0.46, 0.45, 0.94],
+          type: "spring",
+          stiffness: 150,
+          damping: 18
+        }}
+        className="flex justify-center space-x-3 mt-4"
+      >
+        {items.map((_, index) => (
+          <motion.button
+            key={index}
+            onClick={() => handleIndicatorClick(index)}
+            whileHover={{ 
+              scale: 1.2,
+              transition: { duration: 0.2, ease: "easeOut" }
+            }}
+            whileTap={{ scale: 0.9 }}
+            className={`w-3 h-3 rounded-full transition-all duration-500 ${
+              index === currentIndex
+                ? 'bg-gradient-to-r from-blue-500 to-purple-500 scale-125 shadow-lg'
+                : 'bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 dark:hover:bg-slate-500'
+            }`}
+          />
+        ))}
+      </motion.div>
+
+      {/* Auto-play Toggle */}
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ 
+          delay: 1,
+          duration: 0.6,
+          ease: [0.25, 0.46, 0.45, 0.94],
+          type: "spring",
+          stiffness: 150,
+          damping: 18
+        }}
+        className="flex justify-center mt-2"
+      >
         <Button
-          variant="outline"
-          size="icon"
-          className="bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg hover:shadow-xl transition-all duration-300"
-          onClick={handlePrev}
-          onMouseEnter={() => setIsHovered(false)}
-          onMouseLeave={() => setIsHovered(true)}
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsAutoPlaying(!isAutoPlaying)}
+          className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all duration-300 hover:scale-105"
         >
-          <ChevronLeft className="w-5 h-5" />
+          {isAutoPlaying ? 'Pause Auto-play' : 'Resume Auto-play'}
         </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          className="bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg hover:shadow-xl transition-all duration-300"
-          onClick={handleNext}
-          onMouseEnter={() => setIsHovered(false)}
-          onMouseLeave={() => setIsHovered(true)}
-        >
-          <ChevronRight className="w-5 h-5" />
-        </Button>
-      </div>
+      </motion.div>
     </div>
   )
 }
