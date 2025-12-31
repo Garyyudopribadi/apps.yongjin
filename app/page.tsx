@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Loader2, Utensils } from 'lucide-react'
+import { Loader2, Utensils, Shield } from 'lucide-react'
 import DefaultBackground from '../components/layout/default-background'
 import Header from '../components/common/header'
 import ViewModeToggle from '../components/common/view-mode-toggle'
@@ -40,6 +40,16 @@ const menuItems: MenuItem[] = [
     color: "from-green-500 to-emerald-500",
     gradient: "from-green-50 to-emerald-50",
     href: "/yongjinone/survey/canteen"
+  },
+  {
+    id: 4,
+    title: "E-Training Safety Machine",
+    description: "Safety training program for machine operations",
+    icon: <Shield className="w-12 h-12" />,
+    features: ["Safety Protocols", "Machine Training", "Quiz Assessment", "Certificate"],
+    color: "from-red-500 to-orange-500",
+    gradient: "from-red-50 to-orange-50",
+    href: "/e-training/safety-machine"
   }
 ]
 
@@ -47,6 +57,7 @@ export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [viewMode, setViewMode] = useState<'carousel' | 'grid'>('carousel')
   const [isLoading, setIsLoading] = useState(true)
+  const toggleRef = useRef<HTMLDivElement>(null)
 
   // Load view mode from localStorage and simulate loading
   useEffect(() => {
@@ -70,6 +81,16 @@ export default function Home() {
     }
   }, [viewMode, isLoading])
 
+  // Focus on toggle when page loads
+  useEffect(() => {
+    if (!isLoading && toggleRef.current) {
+      // Small delay to ensure animations are complete
+      setTimeout(() => {
+        toggleRef.current?.focus()
+      }, 1000)
+    }
+  }, [isLoading])
+
   const handlePrev = () => {
     setCurrentIndex((prevIndex) => (prevIndex === 0 ? menuItems.length - 1 : prevIndex - 1))
   }
@@ -81,6 +102,8 @@ export default function Home() {
   const handleCardAction = (item: MenuItem) => {
     if (item.id === 3) {
       window.location.href = "/yongjinone/survey/canteen"
+    } else if (item.id === 4) {
+      window.location.href = "/e-training/safety-machine"
     } else {
       // Simulate navigation or action
       console.log(`Navigating to ${item.title}`)
@@ -160,6 +183,7 @@ export default function Home() {
 
         {/* View Mode Toggle - positioned near menu items */}
         <motion.div
+          ref={toggleRef}
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ 
@@ -170,7 +194,8 @@ export default function Home() {
             stiffness: 150,
             damping: 18
           }}
-          className="mb-6"
+          className="mb-6 focus:outline-none focus:ring-4 focus:ring-blue-500/50 rounded-full"
+          tabIndex={-1}
         >
           <ViewModeToggle 
             viewMode={viewMode} 

@@ -18,6 +18,8 @@ export default function Carousel({ items, currentIndex, onPrev, onNext, onCardAc
   const [isHovered, setIsHovered] = useState(false)
   const [direction, setDirection] = useState(0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
 
   // Auto-play functionality
   useEffect(() => {
@@ -103,6 +105,32 @@ export default function Carousel({ items, currentIndex, onPrev, onNext, onCardAc
   const getPrevIndex = () => (currentIndex === 0 ? items.length - 1 : currentIndex - 1)
   const getNextIndex = () => (currentIndex === items.length - 1 ? 0 : currentIndex + 1)
 
+  // Touch/Swipe handlers for mobile
+  const minSwipeDistance = 50
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+
+    if (isLeftSwipe) {
+      handleNext()
+    } else if (isRightSwipe) {
+      handlePrev()
+    }
+  }
+
   return (
     <div className="relative w-full max-w-6xl mx-auto">
       {/* Main Carousel Container */}
@@ -110,6 +138,9 @@ export default function Carousel({ items, currentIndex, onPrev, onNext, onCardAc
         className="relative h-[400px] sm:h-[420px] flex items-center justify-center perspective-1000"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
         {/* Side Cards */}
         <motion.div
@@ -191,7 +222,7 @@ export default function Carousel({ items, currentIndex, onPrev, onNext, onCardAc
         </motion.div>
       </div>
 
-      {/* Navigation Buttons */}
+      {/* Navigation Buttons - Hidden on mobile/tablet */}
       <motion.div
         initial={{ opacity: 0, x: -30, scale: 0.8 }}
         animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -203,7 +234,7 @@ export default function Carousel({ items, currentIndex, onPrev, onNext, onCardAc
           stiffness: 200,
           damping: 20
         }}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 hidden md:block"
       >
         <motion.button
           onClick={handlePrev}
@@ -286,7 +317,7 @@ export default function Carousel({ items, currentIndex, onPrev, onNext, onCardAc
           stiffness: 200,
           damping: 20
         }}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 hidden md:block"
       >
         <motion.button
           onClick={handleNext}
@@ -391,28 +422,24 @@ export default function Carousel({ items, currentIndex, onPrev, onNext, onCardAc
         ))}
       </motion.div>
 
-      {/* Auto-play Toggle */}
+      {/* Mobile Swipe Indicator */}
       <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ 
-          delay: 1,
-          duration: 0.6,
-          ease: [0.25, 0.46, 0.45, 0.94],
-          type: "spring",
-          stiffness: 150,
-          damping: 18
-        }}
-        className="flex justify-center mt-2"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2, duration: 0.5 }}
+        className="flex justify-center mt-2 md:hidden"
       >
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-          className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all duration-300 hover:scale-105"
-        >
-          {isAutoPlaying ? 'Pause Auto-play' : 'Resume Auto-play'}
-        </Button>
+        <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400">
+          <motion.div
+            animate={{ x: [0, 10, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="flex items-center space-x-1"
+          >
+            <span>Swipe</span>
+            <ChevronLeft className="w-3 h-3" />
+            <ChevronRight className="w-3 h-3" />
+          </motion.div>
+        </div>
       </motion.div>
     </div>
   )
