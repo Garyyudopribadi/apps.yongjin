@@ -27,6 +27,157 @@ interface TrainingUser {
 
 const PASSKEY = "0123456"
 
+type Language = "en" | "id"
+
+const translations: Record<Language, {
+	appTitle: string
+	appSubtitle: string
+	loadingTitle: string
+	loadingSubtitle: string
+	loadingBody: string
+	passkeyTitle: string
+	passkeyDescription: string
+	passkeyPlaceholder: string
+	passkeyButton: string
+	passkeyHint: string
+	authInvalid: string
+	totalParticipants: string
+	completedTraining: string
+	completionRate: string
+	avgScoreLabel: string
+	avgScoreSubtitle: string
+	pendingTraining: string
+	pendingSubtitle: string
+	filtersTitle: string
+	filtersDescription: string
+	searchLabel: string
+	facilityLabel: string
+	resetButton: string
+	exportCsvButton: string
+	allFacilities: string
+	pendingSectionTitle: string
+	pendingSectionSubtitle: string
+	pendingEmpty: string
+	completedSectionTitle: string
+	completedSectionSubtitle: string
+	completedEmpty: string
+	columnName: string
+	columnNik: string
+	columnDepartment: string
+	columnFacility: string
+	columnScore: string
+	columnLastVerified: string
+	columnVerifiedAt: string
+	columnActions: string
+	logout: string
+	exportError: string
+	loadError: string
+	answersTitle: string
+	answersEmployee: string
+	answersDepartment: string
+	answersQuestion: string
+	answersAnswer: string
+}> = {
+	en: {
+		appTitle: "Safety Machine Training Dashboard",
+		appSubtitle: "Live overview of training completion across facilities.",
+		loadingTitle: "Loading Training Dashboard",
+		loadingSubtitle: "Preparing Safety Machine training overview...",
+		loadingBody: "",
+		passkeyTitle: "Safety Machine Admin Dashboard",
+		passkeyDescription: "Enter admin passkey to monitor training completion status.",
+		passkeyPlaceholder: "Enter passkey (0123456)",
+		passkeyButton: "Access Dashboard",
+		passkeyHint: "For internal monitoring of E-Training Safety Machine completion only.",
+		authInvalid: "Invalid passkey. Please try again.",
+		totalParticipants: "Total Participants",
+		completedTraining: "Completed Training",
+		completionRate: "completion rate",
+		avgScoreLabel: "Average Score (Completed)",
+		avgScoreSubtitle: "Out of 100",
+		pendingTraining: "Pending Training",
+		pendingSubtitle: "Employees not yet completed",
+		filtersTitle: "Filters",
+		filtersDescription: "Search and segment training participants.",
+		searchLabel: "Search",
+		facilityLabel: "Facility",
+		resetButton: "Reset",
+		exportCsvButton: "Export CSV",
+		allFacilities: "All Facilities",
+		pendingSectionTitle: "Pending / Not Completed",
+		pendingSectionSubtitle: "Users who have not passed the quiz (status not completed).",
+		pendingEmpty: "All users have completed training for this filter.",
+		completedSectionTitle: "Completed / Verified",
+		completedSectionSubtitle: "Users who passed the quiz and received a certificate.",
+		completedEmpty: "No completed users for this filter yet.",
+		columnName: "Name",
+		columnNik: "NIK",
+		columnDepartment: "Department",
+		columnFacility: "Facility",
+		columnScore: "Score",
+		columnLastVerified: "Last Verified",
+		columnVerifiedAt: "Verified At",
+		columnActions: "Actions",
+		logout: "Logout",
+		exportError: "Failed to export CSV. Please try again.",
+		loadError: "Failed to load training data. Please try again later.",
+		answersTitle: "Quiz Answers",
+		answersEmployee: "Employee:",
+		answersDepartment: "Department:",
+		answersQuestion: "Question",
+		answersAnswer: "Answer:",
+	},
+	id: {
+		appTitle: "Dashboard Pelatihan Safety Machine",
+		appSubtitle: "Ringkasan langsung status penyelesaian pelatihan di setiap pabrik.",
+		loadingTitle: "Memuat Dashboard Pelatihan",
+		loadingSubtitle: "Menyiapkan ringkasan pelatihan Safety Machine...",
+		loadingBody: "",
+		passkeyTitle: "Dashboard Admin Safety Machine",
+		passkeyDescription: "Masukkan passkey admin untuk memantau status penyelesaian pelatihan.",
+		passkeyPlaceholder: "Masukkan passkey (0123456)",
+		passkeyButton: "Masuk ke Dashboard",
+		passkeyHint: "Hanya untuk pemantauan internal penyelesaian E-Training Safety Machine.",
+		authInvalid: "Passkey salah. Silakan coba lagi.",
+		totalParticipants: "Total Peserta",
+		completedTraining: "Pelatihan Selesai",
+		completionRate: "tingkat penyelesaian",
+		avgScoreLabel: "Rata-rata Skor (Lulus)",
+		avgScoreSubtitle: "Dari 100",
+		pendingTraining: "Pelatihan Tertunda",
+		pendingSubtitle: "Karyawan yang belum menyelesaikan pelatihan",
+		filtersTitle: "Filter",
+		filtersDescription: "Cari dan kelompokkan peserta pelatihan.",
+		searchLabel: "Pencarian",
+		facilityLabel: "Pabrik",
+		resetButton: "Reset",
+		exportCsvButton: "Ekspor CSV",
+		allFacilities: "Semua Pabrik",
+		pendingSectionTitle: "Belum Selesai / Pending",
+		pendingSectionSubtitle: "Pengguna yang belum lulus kuis (status belum selesai).",
+		pendingEmpty: "Semua pengguna telah menyelesaikan pelatihan untuk filter ini.",
+		completedSectionTitle: "Sudah Selesai / Terverifikasi",
+		completedSectionSubtitle: "Pengguna yang lulus kuis dan sudah menerima sertifikat.",
+		completedEmpty: "Belum ada pengguna yang selesai untuk filter ini.",
+		columnName: "Nama",
+		columnNik: "NIK",
+		columnDepartment: "Departemen",
+		columnFacility: "Pabrik",
+		columnScore: "Skor",
+		columnLastVerified: "Terakhir Verifikasi",
+		columnVerifiedAt: "Waktu Verifikasi",
+		columnActions: "Aksi",
+		logout: "Keluar",
+		exportError: "Gagal mengekspor CSV. Silakan coba lagi.",
+		loadError: "Gagal memuat data pelatihan. Silakan coba lagi nanti.",
+		answersTitle: "Jawaban Kuis",
+		answersEmployee: "Karyawan:",
+		answersDepartment: "Departemen:",
+		answersQuestion: "Pertanyaan",
+		answersAnswer: "Jawaban:",
+	},
+}
+
 // Quiz questions to render friendly answers in the sheet (partial, used to map ids)
 const QUIZ_QUESTIONS = [
 	{ id: 1, question: "Apa pengertian Safety Machine?" },
@@ -37,6 +188,8 @@ const QUIZ_QUESTIONS = [
 ]
 
 export default function SafetyMachineDashboard() {
+	const [language, setLanguage] = useState<Language>("en")
+	const t = translations[language]
 	const [allUsers, setAllUsers] = useState<TrainingUser[]>([])
 	const [isLoading, setIsLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
@@ -132,7 +285,7 @@ export default function SafetyMachineDashboard() {
 			setIsAuthorized(true)
 			setAuthError("")
 		} else {
-			setAuthError("Invalid passkey. Please try again.")
+			setAuthError(t.authInvalid)
 		}
 	}
 
@@ -244,6 +397,7 @@ export default function SafetyMachineDashboard() {
 			URL.revokeObjectURL(url)
 		} catch (err) {
 			console.error("Failed to export CSV", err)
+			setError(t.exportError)
 		}
 	}
 
@@ -259,9 +413,9 @@ export default function SafetyMachineDashboard() {
 						</div>
 						<div className="text-center space-y-2">
 							<h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 via-blue-600 to-purple-600 bg-clip-text text-transparent">
-								Loading Training Dashboard
+								{t.loadingTitle}
 							</h1>
-							<p className="text-muted-foreground">Preparing Safety Machine training overview...</p>
+							<p className="text-muted-foreground">{t.loadingSubtitle}</p>
 						</div>
 					</div>
 				</div>
@@ -285,10 +439,10 @@ export default function SafetyMachineDashboard() {
 								<div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white flex items-center justify-center shadow-lg">
 									<ShieldCheck className="w-8 h-8" />
 								</div>
-								<CardTitle className="text-xl">Safety Machine Admin Dashboard</CardTitle>
-								<CardDescription>
-									Enter admin passkey to monitor training completion status.
-								</CardDescription>
+									<CardTitle className="text-xl">{t.passkeyTitle}</CardTitle>
+									<CardDescription>
+										{t.passkeyDescription}
+									</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-4">
 								<div>
@@ -296,7 +450,7 @@ export default function SafetyMachineDashboard() {
 										type="password"
 										value={passkey}
 										onChange={(e) => setPasskey(e.target.value)}
-										placeholder="Enter passkey (0123456)"
+										placeholder={t.passkeyPlaceholder}
 										className="w-full text-center tracking-[0.3em]"
 									/>
 								</div>
@@ -317,11 +471,11 @@ export default function SafetyMachineDashboard() {
 									disabled={!passkey.trim()}
 									className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
 								>
-									Access Dashboard
+									{t.passkeyButton}
 								</Button>
 
 								<p className="text-xs text-center text-slate-500">
-									For internal monitoring of E-Training Safety Machine completion only.
+									{t.passkeyHint}
 								</p>
 							</CardContent>
 						</Card>
@@ -343,13 +497,29 @@ export default function SafetyMachineDashboard() {
 				>
 					<div>
 						<h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 via-blue-700 to-purple-700 bg-clip-text text-transparent">
-							Safety Machine Training Dashboard
+							{t.appTitle}
 						</h1>
 						<p className="text-sm text-slate-600">
-							Live overview of training completion across facilities.
+							{t.appSubtitle}
 						</p>
 					</div>
 					<div className="flex items-center gap-2 self-end sm:self-auto">
+						<div className="flex gap-1 mr-2">
+							<button
+								type="button"
+								onClick={() => setLanguage("en")}
+								className={`px-2 py-1 text-xs rounded-full border ${language === "en" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-700 border-slate-300"}`}
+							>
+								EN
+							</button>
+							<button
+								type="button"
+								onClick={() => setLanguage("id")}
+								className={`px-2 py-1 text-xs rounded-full border ${language === "id" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-700 border-slate-300"}`}
+							>
+								ID
+							</button>
+						</div>
 						<Button
 							variant="outline"
 							size="sm"
@@ -357,7 +527,7 @@ export default function SafetyMachineDashboard() {
 							className="flex items-center gap-2"
 						>
 							<LogOut className="w-4 h-4" />
-							Logout
+							{t.logout}
 						</Button>
 					</div>
 				</motion.div>
@@ -367,7 +537,7 @@ export default function SafetyMachineDashboard() {
 					<Card>
 						<CardContent className="p-5 flex items-start justify-between">
 							<div>
-								<p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Participants</p>
+								<p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{t.totalParticipants}</p>
 								<p className="mt-2 text-2xl font-bold">{totalUsers}</p>
 							</div>
 							<div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
@@ -380,10 +550,10 @@ export default function SafetyMachineDashboard() {
 						<CardContent className="p-5 flex flex-col gap-3">
 							<div className="flex items-start justify-between">
 								<div>
-									<p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Completed Training</p>
+									<p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{t.completedTraining}</p>
 									<p className="mt-2 text-2xl font-bold">{totalCompleted}</p>
 									<p className="text-xs text-slate-500 mt-1">
-										{completionRate.toFixed(1)}% completion rate
+										{completionRate.toFixed(1)}% {t.completionRate}
 									</p>
 								</div>
 								<div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
@@ -404,9 +574,9 @@ export default function SafetyMachineDashboard() {
 					<Card>
 						<CardContent className="p-5 flex items-start justify-between">
 							<div>
-								<p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Average Score (Completed)</p>
+								<p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{t.avgScoreLabel}</p>
 								<p className="mt-2 text-2xl font-bold">{avgScore.toFixed(1)}</p>
-								<p className="text-xs text-slate-500 mt-1">Out of 100</p>
+								<p className="text-xs text-slate-500 mt-1">{t.avgScoreSubtitle}</p>
 							</div>
 							<div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
 								<ShieldCheck className="w-5 h-5 text-purple-600" />
@@ -417,9 +587,9 @@ export default function SafetyMachineDashboard() {
 					<Card>
 						<CardContent className="p-5 flex items-start justify-between">
 							<div>
-								<p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Pending Training</p>
+								<p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{t.pendingTraining}</p>
 								<p className="mt-2 text-2xl font-bold">{totalUsers - totalCompleted}</p>
-								<p className="text-xs text-slate-500 mt-1">Employees not yet completed</p>
+								<p className="text-xs text-slate-500 mt-1">{t.pendingSubtitle}</p>
 							</div>
 							<div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
 								<Clock className="w-5 h-5 text-amber-600" />
@@ -431,13 +601,13 @@ export default function SafetyMachineDashboard() {
 				{/* Filters & Export */}
 				<Card className="mb-6">
 					<CardHeader className="pb-3">
-						<CardTitle className="text-base">Filters</CardTitle>
-						<CardDescription>Search and segment training participants.</CardDescription>
+						<CardTitle className="text-base">{t.filtersTitle}</CardTitle>
+						<CardDescription>{t.filtersDescription}</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-3">
 						<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 							<div>
-								<p className="text-xs font-medium text-slate-500 mb-1">Search</p>
+								<p className="text-xs font-medium text-slate-500 mb-1">{t.searchLabel}</p>
 								<Input
 									placeholder="Name, NIK, KTP, department, facility..."
 									value={searchInput}
@@ -445,13 +615,13 @@ export default function SafetyMachineDashboard() {
 								/>
 							</div>
 							<div>
-								<p className="text-xs font-medium text-slate-500 mb-1">Facility</p>
+								<p className="text-xs font-medium text-slate-500 mb-1">{t.facilityLabel}</p>
 								<select
 									value={facilityFilter}
 									onChange={(e) => setFacilityFilter(e.target.value)}
 									className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
 								>
-									<option value="all">All Facilities</option>
+									<option value="all">{t.allFacilities}</option>
 									{facilities.map((f) => (
 										<option key={f} value={f}>
 											{f}
@@ -469,7 +639,7 @@ export default function SafetyMachineDashboard() {
 										setFacilityFilter("all")
 									}}
 								>
-									Reset
+									{t.resetButton}
 								</Button>
 								<Button
 									variant="outline"
@@ -478,7 +648,7 @@ export default function SafetyMachineDashboard() {
 									className="flex items-center gap-2"
 								>
 									<Download className="w-4 h-4" />
-									Export CSV
+									{t.exportCsvButton}
 								</Button>
 							</div>
 						</div>
@@ -494,9 +664,9 @@ export default function SafetyMachineDashboard() {
 								<div>
 									<CardTitle className="text-base flex items-center gap-2">
 										<Clock className="w-4 h-4 text-amber-600" />
-										Pending / Not Completed
+										{t.pendingSectionTitle}
 									</CardTitle>
-									<CardDescription className="text-xs">Users who have not passed the quiz (status not completed).</CardDescription>
+									<CardDescription className="text-xs">{t.pendingSectionSubtitle}</CardDescription>
 								</div>
 								<span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
 									{unverifiedUsers.length} users
@@ -507,19 +677,19 @@ export default function SafetyMachineDashboard() {
 							<table className="w-full text-xs sm:text-sm">
 								<thead className="bg-slate-50">
 									<tr>
-										<th className="p-2 text-left">Name</th>
-										<th className="p-2 text-left">NIK</th>
-										<th className="p-2 text-left">Department</th>
-										<th className="p-2 text-left">Facility</th>
-										<th className="p-2 text-left">Score</th>
-										<th className="p-2 text-left">Last Verified</th>
+										<th className="p-2 text-left">{t.columnName}</th>
+										<th className="p-2 text-left">{t.columnNik}</th>
+										<th className="p-2 text-left">{t.columnDepartment}</th>
+										<th className="p-2 text-left">{t.columnFacility}</th>
+										<th className="p-2 text-left">{t.columnScore}</th>
+										<th className="p-2 text-left">{t.columnLastVerified}</th>
 									</tr>
 								</thead>
 								<tbody>
 									{unverifiedUsers.length === 0 && (
 										<tr>
 											<td className="p-3 text-center text-slate-500" colSpan={6}>
-												All users have completed training for this filter.
+												{t.pendingEmpty}
 											</td>
 										</tr>
 									)}
@@ -592,9 +762,9 @@ export default function SafetyMachineDashboard() {
 								<div>
 									<CardTitle className="text-base flex items-center gap-2">
 										<CheckCircle2 className="w-4 h-4 text-emerald-600" />
-										Completed / Verified
+										{t.completedSectionTitle}
 									</CardTitle>
-									<CardDescription className="text-xs">Users who passed the quiz and received a certificate.</CardDescription>
+									<CardDescription className="text-xs">{t.completedSectionSubtitle}</CardDescription>
 								</div>
 								<span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
 									{verifiedUsers.length} users
@@ -605,20 +775,20 @@ export default function SafetyMachineDashboard() {
 							<table className="w-full text-xs sm:text-sm">
 								<thead className="bg-slate-50">
 									<tr>
-										<th className="p-2 text-left">Name</th>
-										<th className="p-2 text-left">NIK</th>
-										<th className="p-2 text-left">Department</th>
-										<th className="p-2 text-left">Facility</th>
-										<th className="p-2 text-left">Score</th>
-										<th className="p-2 text-left">Verified At</th>
-										<th className="p-2 text-left">Actions</th>
+										<th className="p-2 text-left">{t.columnName}</th>
+										<th className="p-2 text-left">{t.columnNik}</th>
+										<th className="p-2 text-left">{t.columnDepartment}</th>
+										<th className="p-2 text-left">{t.columnFacility}</th>
+										<th className="p-2 text-left">{t.columnScore}</th>
+										<th className="p-2 text-left">{t.columnVerifiedAt}</th>
+										<th className="p-2 text-left">{t.columnActions}</th>
 									</tr>
 								</thead>
 								<tbody>
 									{verifiedUsers.length === 0 && (
 										<tr>
 											<td className="p-3 text-center text-slate-500" colSpan={6}>
-												No completed users for this filter yet.
+												{t.completedEmpty}
 											</td>
 										</tr>
 									)}
@@ -707,14 +877,14 @@ export default function SafetyMachineDashboard() {
 						<div className="absolute inset-0 bg-black/40" onClick={closeAnswersSheet} />
 						<div className="ml-auto w-full sm:w-[520px] bg-white h-full shadow-2xl overflow-auto p-6">
 							<div className="flex items-center justify-between mb-4">
-								<h3 className="text-lg font-bold">Quiz Answers — {sheetUser.name}</h3>
+								<h3 className="text-lg font-bold">{t.answersTitle} — {sheetUser.name}</h3>
 								<button onClick={closeAnswersSheet} className="p-2 rounded hover:bg-slate-100">
 									<X className="w-5 h-5" />
 								</button>
 							</div>
 							<div className="mb-4">
-								<div className="text-sm text-slate-600 mb-2">Employee: <span className="font-medium">{sheetUser.nik || '-'}</span></div>
-								<div className="text-sm text-slate-600">Department: <span className="font-medium">{sheetUser.department || '-'}</span></div>
+								<div className="text-sm text-slate-600 mb-2">{t.answersEmployee} <span className="font-medium">{sheetUser.nik || '-'}</span></div>
+								<div className="text-sm text-slate-600">{t.answersDepartment} <span className="font-medium">{sheetUser.department || '-'}</span></div>
 							</div>
 							<div className="space-y-3">
 								{/* Render answers; fall back to showing JSON if structure unknown */}
@@ -725,8 +895,8 @@ export default function SafetyMachineDashboard() {
 										const q = QUIZ_QUESTIONS.find(x => x.id === qid)
 										return (
 											<div key={k} className="p-3 border rounded">
-												<div className="text-sm text-slate-500">Question {qid}{q ? ` — ${q.question}` : ''}</div>
-												<div className="mt-2 font-medium">Answer: <span className="ml-2">{String(selected)}</span></div>
+												<div className="text-sm text-slate-500">{t.answersQuestion} {qid}{q ? ` — ${q.question}` : ''}</div>
+												<div className="mt-2 font-medium">{t.answersAnswer} <span className="ml-2">{String(selected)}</span></div>
 											</div>
 										)
 									})

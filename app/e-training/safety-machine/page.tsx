@@ -5,7 +5,7 @@ import { supabase } from "@app/lib/supabase"
 import { Button } from "@app/components/ui/button"
 import { Input } from "@app/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@app/components/ui/card"
-import { Loader2, CheckCircle2, AlertCircle, PlayCircle, FileText } from "lucide-react"
+import { Loader2, CheckCircle2, AlertCircle, PlayCircle, FileText, Download } from "lucide-react"
 import { motion } from "framer-motion"
 import domtoimage from 'dom-to-image'
 import DefaultBackground from "@app/components/layout/default-background"
@@ -21,6 +21,187 @@ interface UserData {
     sex: string
     status: boolean | null
     score: number | null
+}
+
+type Language = "en" | "id"
+
+const translations: Record<Language, {
+    appTitle: string
+    appSubtitle: string
+    validationSubtitle: string
+    selectFacility: string
+    nikLabel: string
+    nikHint: string
+    captchaLabel: string
+    captchaPlaceholder: string
+    validateButton: string
+    loadingValidating: string
+    trainingTitle: string
+    trainingSubtitle: string
+    readCheckbox: string
+    backButton: string
+    readMoreHint: string
+    startQuizButton: string
+    quizTitle: string
+    quizAnsweredLabel: string
+    quizSubmitButton: string
+    scoreNotCompletedTitle: string
+    scoreNotCompletedSubtitle: string
+    yourScoreLabel: string
+    minimumRequiredLabel: string
+    pleaseTryAgainTitle: string
+    pleaseTryAgainBody: string
+    summaryName: string
+    summaryNik: string
+    summaryAttemptDate: string
+    summaryStatus: string
+    summaryStatusIncomplete: string
+    retakeButton: string
+    certProgramLabel: string
+    certThisIsToCertify: string
+    certHasCompleted: string
+    certEmployeeId: string
+    certDepartment: string
+    certFacility: string
+    certDate: string
+    certDownloadButton: string
+    certBackHomeButton: string
+    certTitle: string
+    pdfLoadingTitle: string
+    pdfLoadingSubtitle: string
+    pdfDownloadLabel: string
+    errors: {
+        nikOrKtpRequired: string
+        nikCharsInvalid: string
+        nikFormatInvalid: string
+        captchaIncorrect: string
+        unexpected: string
+        readMaterialBeforeQuiz: string
+        submitFailed: string
+        nikSuffixNotFound: string
+        ktpNotFound: string
+        nikNotFound: string
+        invalidInputFormat: string
+    }
+}> = {
+    en: {
+        appTitle: "Safety Machine Training",
+        appSubtitle: "Internal Safety Training Program",
+        validationSubtitle: "Please validate your identity to begin the training.",
+        selectFacility: "Select Facility",
+        nikLabel: "NIK (Last 6 Digits, Full NIK) or KTP (Full)",
+        nikHint: "NIK: Last 6 digits, or full NIK • KTP: Full number (10-20 digits)",
+        captchaLabel: "Security Check",
+        captchaPlaceholder: "Enter the result",
+        validateButton: "Validate Identity",
+        loadingValidating: "Validating...",
+        trainingTitle: "Training Material",
+        trainingSubtitle: "Read the document carefully and confirm before taking the quiz.",
+        readCheckbox: "I have read and understood the Safety Machine training material completely.",
+        backButton: "Back",
+        readMoreHint: "Please spend at least {seconds}s more seconds reading",
+        startQuizButton: "Start Quiz",
+        quizTitle: "Quiz Assessment",
+        quizAnsweredLabel: "Answered",
+        quizSubmitButton: "Submit Answers",
+        scoreNotCompletedTitle: "Training Not Completed",
+        scoreNotCompletedSubtitle: "You need to score at least 80 to complete the training.",
+        yourScoreLabel: "Your Score",
+        minimumRequiredLabel: "Minimum required:",
+        pleaseTryAgainTitle: "Please Try Again",
+        pleaseTryAgainBody: "Review the training material carefully and retake the quiz. You need to achieve a minimum score of 80 to receive your completion certificate.",
+        summaryName: "Name:",
+        summaryNik: "NIK:",
+        summaryAttemptDate: "Attempt Date:",
+        summaryStatus: "Status:",
+        summaryStatusIncomplete: "INCOMPLETE",
+        retakeButton: "Review Material & Retake Quiz",
+        certProgramLabel: "Internal Safety Training Program",
+        certThisIsToCertify: "This is to certify that",
+        certHasCompleted: "has successfully completed the Safety Machine Training Program and has demonstrated exceptional understanding of workplace safety protocols, machine operation standards, and commitment to maintaining a safe working environment.",
+        certEmployeeId: "Employee ID",
+        certDepartment: "Department",
+        certFacility: "Facility",
+        certDate: "Date",
+        certDownloadButton: "Download Certificate",
+        certBackHomeButton: "Back to Home",
+        certTitle: "Certificate of Completion",
+        pdfLoadingTitle: "Loading training material...",
+        pdfLoadingSubtitle: "Please wait while the PDF loads",
+        pdfDownloadLabel: "Download PDF",
+        errors: {
+            nikOrKtpRequired: "Please enter your NIK or KTP.",
+            nikCharsInvalid: "Please enter only letters, numbers, and underscores for NIK or KTP.",
+            nikFormatInvalid: "NIK must be 6 digits, full NIK (3-20 chars with letters), or KTP (10-20 digits).",
+            captchaIncorrect: "Incorrect security answer. Please calculate {a} + {b}.",
+            unexpected: "An unexpected error occurred.",
+            readMaterialBeforeQuiz: "Please read the training material completely and confirm before starting the quiz.",
+            submitFailed: "Failed to submit results. Please try again.",
+            nikSuffixNotFound: "NIK ending with these digits not found. Please check your NIK.",
+            ktpNotFound: "KTP not found. Please check your KTP number.",
+            nikNotFound: "NIK not found. Please check your NIK.",
+            invalidInputFormat: "Invalid input format.",
+        },
+    },
+    id: {
+        appTitle: "Pelatihan Safety Machine",
+        appSubtitle: "Program Pelatihan Keselamatan Internal",
+        validationSubtitle: "Silakan validasi identitas Anda untuk memulai pelatihan.",
+        selectFacility: "Pilih Pabrik",
+        nikLabel: "NIK (6 Digit Terakhir, NIK Penuh) atau KTP (Penuh)",
+        nikHint: "NIK: 6 digit terakhir atau NIK penuh • KTP: Nomor lengkap (10-20 digit)",
+        captchaLabel: "Pemeriksaan Keamanan",
+        captchaPlaceholder: "Masukkan hasil penjumlahan",
+        validateButton: "Validasi Identitas",
+        loadingValidating: "Memvalidasi...",
+        trainingTitle: "Materi Pelatihan",
+        trainingSubtitle: "Baca dokumen dengan seksama dan konfirmasi sebelum mengerjakan kuis.",
+        readCheckbox: "Saya sudah membaca dan memahami materi pelatihan Safety Machine dengan lengkap.",
+        backButton: "Kembali",
+        readMoreHint: "Silakan membaca setidaknya {seconds}s detik lagi",
+        startQuizButton: "Mulai Kuis",
+        quizTitle: "Penilaian Kuis",
+        quizAnsweredLabel: "Terjawab",
+        quizSubmitButton: "Kirim Jawaban",
+        scoreNotCompletedTitle: "Pelatihan Belum Selesai",
+        scoreNotCompletedSubtitle: "Anda harus mendapatkan skor minimal 80 untuk menyelesaikan pelatihan.",
+        yourScoreLabel: "Skor Anda",
+        minimumRequiredLabel: "Minimal:",
+        pleaseTryAgainTitle: "Silakan Coba Lagi",
+        pleaseTryAgainBody: "Tinjau kembali materi pelatihan dengan seksama lalu ulangi kuis. Anda harus mencapai skor minimal 80 untuk menerima sertifikat.",
+        summaryName: "Nama:",
+        summaryNik: "NIK:",
+        summaryAttemptDate: "Tanggal Percobaan:",
+        summaryStatus: "Status:",
+        summaryStatusIncomplete: "BELUM LULUS",
+        retakeButton: "Tinjau Materi & Ulangi Kuis",
+        certProgramLabel: "Program Pelatihan Keselamatan Internal",
+        certThisIsToCertify: "Dengan ini menyatakan bahwa",
+        certHasCompleted: "telah menyelesaikan Pelatihan Safety Machine dan menunjukkan pemahaman yang baik tentang prosedur keselamatan kerja, standar pengoperasian mesin, serta komitmen untuk menjaga lingkungan kerja yang aman.",
+        certEmployeeId: "ID Karyawan",
+        certDepartment: "Departemen",
+        certFacility: "Pabrik",
+        certDate: "Tanggal",
+        certDownloadButton: "Unduh Sertifikat",
+        certBackHomeButton: "Kembali ke Beranda",
+        certTitle: "Sertifikat Penyelesaian",
+        pdfLoadingTitle: "Memuat materi pelatihan...",
+        pdfLoadingSubtitle: "Harap tunggu hingga PDF selesai dimuat",
+        pdfDownloadLabel: "Unduh PDF",
+        errors: {
+            nikOrKtpRequired: "Silakan masukkan NIK atau KTP.",
+            nikCharsInvalid: "Gunakan hanya huruf, angka, dan garis bawah untuk NIK atau KTP.",
+            nikFormatInvalid: "NIK harus 6 digit, NIK penuh (3-20 karakter dengan huruf), atau KTP (10-20 digit).",
+            captchaIncorrect: "Jawaban keamanan salah. Silakan hitung {a} + {b}.",
+            unexpected: "Terjadi kesalahan yang tidak terduga.",
+            readMaterialBeforeQuiz: "Silakan baca materi pelatihan hingga selesai dan konfirmasi sebelum memulai kuis.",
+            submitFailed: "Gagal mengirim hasil. Silakan coba lagi.",
+            nikSuffixNotFound: "NIK dengan 6 digit terakhir ini tidak ditemukan. Silakan periksa kembali NIK Anda.",
+            ktpNotFound: "KTP tidak ditemukan. Silakan periksa kembali nomor KTP Anda.",
+            nikNotFound: "NIK tidak ditemukan. Silakan periksa kembali NIK Anda.",
+            invalidInputFormat: "Format input tidak valid.",
+        },
+    },
 }
 
 const QUIZ_QUESTIONS = [
@@ -87,10 +268,18 @@ export default function SafetyMachineTraining() {
     const [error, setError] = useState("")
     const [userData, setUserData] = useState<UserData | null>(null)
 
+    const [language, setLanguage] = useState<Language>("en")
+    const t = translations[language]
+
     // Validation Form State
     const [facility, setFacility] = useState("Factory 1")
     const [nikOrKtp, setNikOrKtp] = useState("")
     const [userIpAddress, setUserIpAddress] = useState("")
+    
+    // Simple Math Captcha State
+    const [captchaNum1, setCaptchaNum1] = useState(0)
+    const [captchaNum2, setCaptchaNum2] = useState(0)
+    const [captchaAnswer, setCaptchaAnswer] = useState("")
     // Quiz State
     const [answers, setAnswers] = useState<Record<number, string>>({})
     const [score, setScore] = useState(0)
@@ -163,33 +352,55 @@ export default function SafetyMachineTraining() {
         fetchIpAddress()
     }, [])
 
+    // Generate simple math captcha
+    useEffect(() => {
+        setCaptchaNum1(Math.floor(Math.random() * 10) + 1)
+        setCaptchaNum2(Math.floor(Math.random() * 10) + 1)
+    }, [])
+
     const handleValidation = async () => {
         setError("")
         setLoading(true)
 
+        // Validate Captcha
+        if (parseInt(captchaAnswer) !== captchaNum1 + captchaNum2) {
+            const msg = t.errors.captchaIncorrect
+                .replace("{a}", String(captchaNum1))
+                .replace("{b}", String(captchaNum2))
+            setError(msg)
+            setLoading(false)
+            // Regenerate captcha on failure
+            setCaptchaNum1(Math.floor(Math.random() * 10) + 1)
+            setCaptchaNum2(Math.floor(Math.random() * 10) + 1)
+            setCaptchaAnswer("")
+            return
+        }
+
         const trimmedInput = nikOrKtp.trim()
 
-        // Validate input format
+        // Validate input format - allow alphanumeric and underscore
         if (!trimmedInput) {
-            setError("Please enter your NIK or KTP.")
+            setError(t.errors.nikOrKtpRequired)
             setLoading(false)
             return
         }
 
-        // Check if input is numeric
-        if (!/^\d+$/.test(trimmedInput)) {
-            setError("Please enter only numbers for NIK or KTP.")
+        // Check if input contains only valid characters (letters, numbers, underscore)
+        if (!/^[A-Za-z0-9_]+$/.test(trimmedInput)) {
+            setError(t.errors.nikCharsInvalid)
             setLoading(false)
             return
         }
 
         // Check input length
-        if (trimmedInput.length === 6) {
+        if (trimmedInput.length === 6 && /^\d{6}$/.test(trimmedInput)) {
             // 6 digits - treat as NIK suffix
-        } else if (trimmedInput.length >= 10 && trimmedInput.length <= 20) {
-            // Longer input - treat as full KTP
+        } else if (trimmedInput.length >= 10 && trimmedInput.length <= 20 && /^\d+$/.test(trimmedInput)) {
+            // Longer numeric input - treat as full KTP
+        } else if (trimmedInput.length >= 3 && trimmedInput.length <= 20 && /[A-Za-z_]/.test(trimmedInput)) {
+            // Contains letters/underscore - treat as full NIK
         } else {
-            setError("NIK must be 6 digits. KTP must be 10-20 digits.")
+            setError(t.errors.nikFormatInvalid)
             setLoading(false)
             return
         }
@@ -202,60 +413,46 @@ export default function SafetyMachineTraining() {
                 .select("*")
                 .eq("facility", facility)
 
-            // Determine if input is 6 digits (NIK) or longer (KTP)
+            // Determine search type based on input
             const isSixDigits = /^\d{6}$/.test(nikOrKtp.trim())
+            const isNumericLong = /^\d+$/.test(nikOrKtp.trim()) && nikOrKtp.trim().length >= 10
+            const containsLetters = /[A-Za-z_]/.test(nikOrKtp.trim())
 
             if (isSixDigits) {
-                // For 6-digit input, search for NIK ending with these digits
+                // 6 digits - search for NIK ending with these digits
                 query = query.ilike('nik', `%${nikOrKtp.trim()}`)
-            } else {
-                // For longer input, search for exact KTP match
+            } else if (isNumericLong) {
+                // Longer numeric input - search for exact KTP match
                 query = query.eq('ktp', nikOrKtp.trim())
+            } else if (containsLetters) {
+                // Contains letters/underscore - search for exact NIK match
+                query = query.eq('nik', nikOrKtp.trim())
             }
 
             const { data, error } = await query.single()
 
             if (error || !data) {
                 const isSixDigits = /^\d{6}$/.test(trimmedInput)
-                const errorMsg = isSixDigits
-                    ? "NIK ending with these digits not found. Please check your NIK."
-                    : "KTP not found. Please check your KTP number."
+                const isNumericLong = /^\d+$/.test(trimmedInput) && trimmedInput.length >= 10
+                const containsLetters = /[A-Za-z_]/.test(trimmedInput)
+
+                let errorMsg = ""
+                if (isSixDigits) {
+                    errorMsg = t.errors.nikSuffixNotFound
+                } else if (isNumericLong) {
+                    errorMsg = t.errors.ktpNotFound
+                } else if (containsLetters) {
+                    errorMsg = t.errors.nikNotFound
+                } else {
+                    errorMsg = t.errors.invalidInputFormat
+                }
                 setError(errorMsg)
                 setLoading(false)
                 return
             }
 
-            // Check if this IP address has been used with a DIFFERENT NIK/KTP today
-            const today = new Date().toISOString().split('T')[0]
-            const { data: ipCheckData, error: ipCheckError } = await supabase
-                .from("etraining-safetymachine")
-                .select("nik, ktp")
-                .eq("ipaddress", userIpAddress)
-                .gte("date_verified", `${today}T00:00:00`)
-                .lte("date_verified", `${today}T23:59:59`)
-
-            if (ipCheckError) {
-                console.error('IP check error:', ipCheckError)
-            }
-
-            // Check if any existing records have different NIK/KTP
-            if (ipCheckData && ipCheckData.length > 0) {
-                const hasDifferentIdentity = ipCheckData.some(record => {
-                    if (isSixDigits) {
-                        // For NIK, check if the last 6 digits are different
-                        return !record.nik?.endsWith(nikOrKtp.trim())
-                    } else {
-                        // For KTP, check if it's different
-                        return record.ktp !== nikOrKtp.trim()
-                    }
-                })
-
-                if (hasDifferentIdentity) {
-                    setError("This device has already been used for a different account today. Only one account per device per day is allowed.")
-                    setLoading(false)
-                    return
-                }
-            }
+            // IP check removed to allow shared devices
+            // We now rely on the Math Captcha to prevent bot spam
 
             // Save IP address to the user record
             const { error: updateError } = await supabase
@@ -283,7 +480,7 @@ export default function SafetyMachineTraining() {
                 ;(window as any).readingInterval = interval
             }
         } catch (err) {
-            setError("An unexpected error occurred.")
+            setError(t.errors.unexpected)
             console.error(err)
         } finally {
             setLoading(false)
@@ -292,7 +489,7 @@ export default function SafetyMachineTraining() {
 
     const handleStartQuiz = () => {
         if (!pdfReadConfirmed || timeSpentReading < MIN_READING_TIME) {
-            setError("Please read the training material completely and confirm before starting the quiz.")
+            setError(t.errors.readMaterialBeforeQuiz)
             return
         }
         setStep("quiz")
@@ -339,7 +536,7 @@ export default function SafetyMachineTraining() {
             window.scrollTo(0, 0)
 
         } catch (err) {
-            setError("Failed to submit results. Please try again.")
+            setError(t.errors.submitFailed)
             console.error(err)
         } finally {
             setLoading(false)
@@ -473,6 +670,22 @@ export default function SafetyMachineTraining() {
         <DefaultBackground showFooter={true}>
             <div className="flex-1 flex flex-col justify-center px-3 sm:px-4 py-4">
                 <div className="max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto w-full">
+                    <div className="flex justify-end mb-2 text-xs sm:text-sm gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setLanguage("en")}
+                            className={`px-2 py-1 rounded-full border ${language === "en" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-700 border-slate-300"}`}
+                        >
+                            EN
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setLanguage("id")}
+                            className={`px-2 py-1 rounded-full border ${language === "id" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-700 border-slate-300"}`}
+                        >
+                            ID
+                        </button>
+                    </div>
                     {step === "validation" && (
                         <div className="text-center mb-6">
                             <img
@@ -485,10 +698,10 @@ export default function SafetyMachineTraining() {
                             </h2>
                             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mb-3 rounded-full"></div>
                             <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-slate-800 via-slate-700 to-slate-900 bg-clip-text text-transparent mb-1">
-                                Safety Machine Training
+                                {t.appTitle}
                             </h1>
                             <p className="text-sm md:text-base text-slate-600 font-medium">
-                                Internal Safety Training Program
+                                {t.appSubtitle}
                             </p>
                         </div>
                     )}
@@ -502,13 +715,13 @@ export default function SafetyMachineTraining() {
                             <Card className="w-fit mx-auto shadow-xl border-0 bg-white/95 backdrop-blur-sm rounded-2xl overflow-hidden">
                                 <CardHeader className="pb-2 pt-4 md:pt-6">
                                     <CardDescription className="text-center text-sm md:text-base">
-                                        Please validate your identity to begin the training.
+                                        {t.validationSubtitle}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-2 px-2 md:px-6 pb-4">
                                     <div className="space-y-2 max-w-xs mx-auto">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium leading-none text-center block">Select Facility</label>
+                                            <label className="text-sm font-medium leading-none text-center block">{t.selectFacility}</label>
                                             <div className="flex gap-2 flex-wrap justify-center">
                                                 {["Factory 1", "Factory 2", "Factory 3"].map((fac) => (
                                                     <Button
@@ -527,16 +740,34 @@ export default function SafetyMachineTraining() {
                                             </div>
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-sm font-medium leading-none text-center block">NIK (Last 6 Digits) or KTP (Full)</label>
+                                            <label className="text-sm font-medium leading-none text-center block">{t.nikLabel}</label>
                                             <Input
-                                                placeholder="Enter last 6 digits of NIK or full KTP"
+                                                placeholder={t.nikLabel}
                                                 value={nikOrKtp}
                                                 onChange={(e) => setNikOrKtp(e.target.value)}
                                                 className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 h-9"
                                             />
                                             <p className="text-xs text-slate-500 mt-1 text-center">
-                                                NIK: Last 6 digits only • KTP: Full number (10-20 digits)
+                                                {t.nikHint}
                                             </p>
+                                        </div>
+
+                                        <div className="space-y-1 pt-2">
+                                            <label className="text-sm font-medium leading-none text-center block">
+                                                {t.captchaLabel}: <span className="font-bold text-blue-600">{captchaNum1} + {captchaNum2} = ?</span>
+                                            </label>
+                                            <Input
+                                                placeholder={t.captchaPlaceholder}
+                                                value={captchaAnswer}
+                                                onChange={(e) => setCaptchaAnswer(e.target.value)}
+                                                className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 h-9 text-center font-medium"
+                                                type="number"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handleValidation()
+                                                    }
+                                                }}
+                                            />
                                         </div>
                                     </div>
 
@@ -555,15 +786,19 @@ export default function SafetyMachineTraining() {
                                     <Button
                                         onClick={handleValidation}
                                         className="text-sm md:text-base h-10 md:h-12 px-8 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all duration-300 shadow-lg hover:shadow-xl"
-                                        disabled={loading || !nikOrKtp.trim() || (!/^\d{6}$/.test(nikOrKtp.trim()) && !/^\d{10,20}$/.test(nikOrKtp.trim()))}
+                                        disabled={loading || !nikOrKtp.trim() || !captchaAnswer.trim() || !/^[A-Za-z0-9_]+$/.test(nikOrKtp.trim()) || !(
+                                            (/^\d{6}$/.test(nikOrKtp.trim())) ||
+                                            (/^\d{10,20}$/.test(nikOrKtp.trim())) ||
+                                            (/^[A-Za-z0-9_]{3,20}$/.test(nikOrKtp.trim()) && /[A-Za-z_]/.test(nikOrKtp.trim()))
+                                        )}
                                     >
                                         {loading ? (
                                             <>
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Validating...
+                                                {t.loadingValidating}
                                             </>
                                         ) : (
-                                            "Validate Identity"
+                                            t.validateButton
                                         )}
                                     </Button>
                                 </CardFooter>
@@ -581,9 +816,9 @@ export default function SafetyMachineTraining() {
                             <CardHeader className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white p-6 md:p-8">
                                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                                     <div>
-                                        <CardTitle className="text-2xl md:text-3xl font-bold">Training Material</CardTitle>
+                                        <CardTitle className="text-2xl md:text-3xl font-bold">{t.trainingTitle}</CardTitle>
                                         <CardDescription className="text-slate-300 mt-2 text-sm md:text-base">
-                                            Read the document carefully and confirm before taking the quiz.
+                                            {t.trainingSubtitle}
                                         </CardDescription>
                                     </div>
                                     <div className="text-left md:text-right">
@@ -606,12 +841,12 @@ export default function SafetyMachineTraining() {
                                     {pdfLoading && (
                                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-10">
                                             <Loader2 className="h-12 w-12 animate-spin text-blue-600 mb-4" />
-                                            <p className="text-slate-600 font-medium">Loading training material...</p>
-                                            <p className="text-sm text-slate-500 mt-2">Please wait while the PDF loads</p>
+                                            <p className="text-slate-600 font-medium">{t.pdfLoadingTitle}</p>
+                                            <p className="text-sm text-slate-500 mt-2">{t.pdfLoadingSubtitle}</p>
                                         </div>
                                     )}
                                     <iframe
-                                        src="https://mozilla.github.io/pdf.js/web/viewer.html?file=https://phzyooddlafqozryxcqa.supabase.co/storage/v1/object/public/pdf/etraining-safetymachine.pdf"
+                                        src="https://mozilla.github.io/pdf.js/web/viewer.html?file=https://phzyooddlafqozryxcqa.supabase.co/storage/v1/object/public/pdf/etraining-safetymachine.pdf#page=1&toolbar=0&navpanes=0"
                                         className="w-full h-full"
                                         title="Training PDF"
                                         allow="fullscreen"
@@ -624,8 +859,8 @@ export default function SafetyMachineTraining() {
                                             rel="noopener noreferrer"
                                             className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
                                         >
-                                            <FileText className="w-4 h-4" />
-                                            Open in new tab
+                                            <Download className="w-4 h-4" />
+                                            {t.pdfDownloadLabel}
                                         </a>
                                     </div>
                                 </div>
@@ -640,7 +875,7 @@ export default function SafetyMachineTraining() {
                                         className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                                     />
                                     <label htmlFor="confirm-read" className="text-sm md:text-base text-slate-700 cursor-pointer flex-1">
-                                        I have read and understood the Safety Machine training material completely.
+                                        {t.readCheckbox}
                                     </label>
                                 </div>
                                 <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -654,12 +889,12 @@ export default function SafetyMachineTraining() {
                                         }}
                                         className="w-full sm:w-auto"
                                     >
-                                        Back
+                                        {t.backButton}
                                     </Button>
                                     <div className="flex flex-col items-end gap-2 w-full sm:w-auto">
                                         {timeSpentReading < MIN_READING_TIME && (
                                             <span className="text-xs text-amber-600 font-medium">
-                                                Please spend at least {MIN_READING_TIME - timeSpentReading} more seconds reading
+                                                {t.readMoreHint.replace("{seconds}", String(MIN_READING_TIME - timeSpentReading))}
                                             </span>
                                         )}
                                         <Button
@@ -667,7 +902,7 @@ export default function SafetyMachineTraining() {
                                             disabled={!pdfReadConfirmed || timeSpentReading < MIN_READING_TIME}
                                             className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white min-w-[150px] w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                                         >
-                                            Start Quiz <PlayCircle className="ml-2 h-4 w-4" />
+                                            {t.startQuizButton} <PlayCircle className="ml-2 h-4 w-4" />
                                         </Button>
                                     </div>
                                 </div>
@@ -685,9 +920,9 @@ export default function SafetyMachineTraining() {
                         <Card className="w-full shadow-lg border-0">
                         <CardHeader className="bg-slate-900 text-white p-6 sticky top-0 z-10">
                             <div className="flex justify-between items-center">
-                                <CardTitle>Quiz Assessment</CardTitle>
+                                <CardTitle>{t.quizTitle}</CardTitle>
                                 <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-mono">
-                                    {Object.keys(answers).length}/{QUIZ_QUESTIONS.length} Answered
+                                    {Object.keys(answers).length}/{QUIZ_QUESTIONS.length} {t.quizAnsweredLabel}
                                 </span>
                             </div>
                         </CardHeader>
@@ -734,7 +969,7 @@ export default function SafetyMachineTraining() {
                                 disabled={Object.keys(answers).length < QUIZ_QUESTIONS.length || loading}
                                 className="w-full md:w-auto text-lg h-12 px-8"
                             >
-                                {loading ? <Loader2 className="animate-spin" /> : "Submit Answers"}
+                                {loading ? <Loader2 className="animate-spin" /> : t.quizSubmitButton}
                             </Button>
                         </CardFooter>
                     </Card>
@@ -755,19 +990,19 @@ export default function SafetyMachineTraining() {
                                     <AlertCircle className="h-16 w-16 text-white" />
                                 </div>
                                 <CardHeader className="pb-4">
-                                    <CardTitle className="text-3xl font-bold text-slate-800">Training Not Completed</CardTitle>
+                                    <CardTitle className="text-3xl font-bold text-slate-800">{t.scoreNotCompletedTitle}</CardTitle>
                                     <CardDescription className="text-base mt-2">
-                                        You need to score at least 80 to complete the training.
+                                        {t.scoreNotCompletedSubtitle}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6 pb-8">
                                     <div className="py-6">
-                                        <p className="text-sm text-slate-600 uppercase tracking-widest mb-3">Your Score</p>
+                                        <p className="text-sm text-slate-600 uppercase tracking-widest mb-3">{t.yourScoreLabel}</p>
                                         <p className="text-7xl font-bold text-orange-600 mb-4">
                                             {score}
                                         </p>
                                         <p className="text-lg text-slate-600">
-                                            Minimum required: <span className="font-bold text-slate-800">80</span>
+                                            {t.minimumRequiredLabel} <span className="font-bold text-slate-800">80</span>
                                         </p>
                                     </div>
 
@@ -775,9 +1010,9 @@ export default function SafetyMachineTraining() {
                                         <div className="flex items-start gap-3">
                                             <AlertCircle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
                                             <div className="text-left">
-                                                <h4 className="font-semibold text-slate-800 mb-2">Please Try Again</h4>
+                                                <h4 className="font-semibold text-slate-800 mb-2">{t.pleaseTryAgainTitle}</h4>
                                                 <p className="text-sm text-slate-600 leading-relaxed">
-                                                    Review the training material carefully and retake the quiz. You need to achieve a minimum score of 80 to receive your completion certificate.
+                                                    {t.pleaseTryAgainBody}
                                                 </p>
                                             </div>
                                         </div>
@@ -785,20 +1020,20 @@ export default function SafetyMachineTraining() {
 
                                     <div className="bg-slate-50 p-6 rounded-lg text-left max-w-md mx-auto space-y-2 text-sm">
                                         <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Name:</span>
+                                            <span className="text-muted-foreground">{t.summaryName}</span>
                                             <span className="font-medium">{userData?.name}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-muted-foreground">NIK:</span>
+                                            <span className="text-muted-foreground">{t.summaryNik}</span>
                                             <span className="font-medium">{userData?.nik}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Attempt Date:</span>
+                                            <span className="text-muted-foreground">{t.summaryAttemptDate}</span>
                                             <span className="font-medium">{new Date().toLocaleDateString()}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Status:</span>
-                                            <span className="font-medium text-orange-600">INCOMPLETE</span>
+                                            <span className="text-muted-foreground">{t.summaryStatus}</span>
+                                            <span className="font-medium text-orange-600">{t.summaryStatusIncomplete}</span>
                                         </div>
                                     </div>
 
@@ -813,7 +1048,7 @@ export default function SafetyMachineTraining() {
                                             }}
                                             className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white px-8 py-6 text-lg h-auto"
                                         >
-                                            Review Material & Retake Quiz
+                                            {t.retakeButton}
                                         </Button>
                                     </div>
                                 </CardContent>
@@ -901,7 +1136,7 @@ export default function SafetyMachineTraining() {
                                                 PT. YONGJIN JAVASUKA GARMENT
                                             </h2>
                                             <div className="w-64 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto mb-1"></div>
-                                            <p className="text-base text-slate-600 font-medium">Internal Safety Training Program</p>
+                                                    <p className="text-base text-slate-600 font-medium">{t.certProgramLabel}</p>
                                         </div>
 
                                         {/* Right: Score Badge */}
@@ -923,7 +1158,7 @@ export default function SafetyMachineTraining() {
                                     <div className="text-center mb-3">
                                         <div className="inline-block px-8 py-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg">
                                             <h3 className="text-xl font-bold text-white tracking-widest uppercase">
-                                                Certificate of Completion
+                                                {t.certTitle}
                                             </h3>
                                         </div>
                                     </div>
@@ -931,33 +1166,33 @@ export default function SafetyMachineTraining() {
                                     {/* Main Content */}
                                     <div className="text-center flex-1 flex flex-col justify-center">
                                         <p className="text-base text-slate-600 mb-3 font-medium italic">
-                                            This is to certify that
+                                            {t.certThisIsToCertify}
                                         </p>
                                         <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-700 via-purple-600 to-blue-700 bg-clip-text text-transparent mb-3 tracking-wide px-2 py-1 leading-tight overflow-visible">
                                             {userData?.name}
                                         </h1>
                                         <div className="max-w-3xl mx-auto px-4">
                                             <p className="text-base text-slate-700 leading-relaxed mb-4">
-                                                has successfully completed the <span className="font-bold text-blue-700">Safety Machine Training Program</span> and has demonstrated exceptional understanding of workplace safety protocols, machine operation standards, and commitment to maintaining a safe working environment.
+                                                {t.certHasCompleted}
                                             </p>
                                         </div>
 
                                         {/* User Details - Horizontal Layout */}
                                         <div className="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto mb-4">
                                             <div className="bg-white/90 backdrop-blur-sm px-6 py-2.5 rounded-lg border-2 border-blue-200 shadow-md">
-                                                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Employee ID</p>
+                                                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">{t.certEmployeeId}</p>
                                                 <p className="text-base font-bold text-slate-800">{userData?.nik}</p>
                                             </div>
                                             <div className="bg-white/90 backdrop-blur-sm px-6 py-2.5 rounded-lg border-2 border-purple-200 shadow-md">
-                                                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Department</p>
+                                                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">{t.certDepartment}</p>
                                                 <p className="text-base font-bold text-slate-800">{userData?.department}</p>
                                             </div>
                                             <div className="bg-white/90 backdrop-blur-sm px-6 py-2.5 rounded-lg border-2 border-blue-200 shadow-md">
-                                                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Facility</p>
+                                                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">{t.certFacility}</p>
                                                 <p className="text-base font-bold text-slate-800">{userData?.facility}</p>
                                             </div>
                                             <div className="bg-white/90 backdrop-blur-sm px-6 py-2.5 rounded-lg border-2 border-purple-200 shadow-md">
-                                                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Date</p>
+                                                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">{t.certDate}</p>
                                                 <p className="text-base font-bold text-slate-800">{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                                             </div>
                                         </div>
@@ -1064,7 +1299,7 @@ export default function SafetyMachineTraining() {
                                                     PT. YONGJIN JAVASUKA GARMENT
                                                 </h2>
                                                 <div className="w-64 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto mb-1"></div>
-                                                <p className="text-base text-slate-600 font-medium">Internal Safety Training Program</p>
+                                                <p className="text-base text-slate-600 font-medium">{t.certProgramLabel}</p>
                                             </div>
 
                                             {/* Right: Score Badge */}
@@ -1086,7 +1321,7 @@ export default function SafetyMachineTraining() {
                                         <div className="text-center mb-3">
                                             <div className="inline-block px-8 py-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg">
                                                 <h3 className="text-xl font-bold text-white tracking-widest uppercase">
-                                                    Certificate of Completion
+                                                    {t.certTitle}
                                                 </h3>
                                             </div>
                                         </div>
@@ -1094,33 +1329,33 @@ export default function SafetyMachineTraining() {
                                         {/* Main Content */}
                                         <div className="text-center flex-1 flex flex-col justify-center">
                                             <p className="text-base text-slate-600 mb-3 font-medium italic">
-                                                This is to certify that
+                                                {t.certThisIsToCertify}
                                             </p>
                                             <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-700 via-purple-600 to-blue-700 bg-clip-text text-transparent mb-3 tracking-wide px-2 py-1 leading-tight overflow-visible">
                                                 {userData?.name}
                                             </h1>
                                             <div className="max-w-3xl mx-auto px-4">
                                                 <p className="text-base text-slate-700 leading-relaxed mb-4">
-                                                    has successfully completed the <span className="font-bold text-blue-700">Safety Machine Training Program</span> and has demonstrated exceptional understanding of workplace safety protocols, machine operation standards, and commitment to maintaining a safe working environment.
+                                                    {t.certHasCompleted}
                                                 </p>
                                             </div>
 
                                             {/* User Details - Horizontal Layout */}
                                             <div className="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto mb-4">
                                                 <div className="bg-white/90 backdrop-blur-sm px-6 py-2.5 rounded-lg border-2 border-blue-200 shadow-md">
-                                                    <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Employee ID</p>
+                                                    <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">{t.certEmployeeId}</p>
                                                     <p className="text-base font-bold text-slate-800">{userData?.nik}</p>
                                                 </div>
                                                 <div className="bg-white/90 backdrop-blur-sm px-6 py-2.5 rounded-lg border-2 border-purple-200 shadow-md">
-                                                    <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Department</p>
+                                                    <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">{t.certDepartment}</p>
                                                     <p className="text-base font-bold text-slate-800">{userData?.department}</p>
                                                 </div>
                                                 <div className="bg-white/90 backdrop-blur-sm px-6 py-2.5 rounded-lg border-2 border-blue-200 shadow-md">
-                                                    <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Facility</p>
+                                                    <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">{t.certFacility}</p>
                                                     <p className="text-base font-bold text-slate-800">{userData?.facility}</p>
                                                 </div>
                                                 <div className="bg-white/90 backdrop-blur-sm px-6 py-2.5 rounded-lg border-2 border-purple-200 shadow-md">
-                                                    <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Date</p>
+                                                    <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">{t.certDate}</p>
                                                     <p className="text-base font-bold text-slate-800">{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                                                 </div>
                                             </div>
@@ -1169,14 +1404,14 @@ export default function SafetyMachineTraining() {
                                         className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 sm:px-8 h-10 sm:h-11 text-sm sm:text-base w-full sm:w-auto shadow-lg hover:shadow-xl transition-all"
                                     >
                                         <FileText className="mr-2 h-4 w-4" />
-                                        Download Certificate
+                                        {t.certDownloadButton}
                                     </Button>
                                     <Button 
                                         variant="outline" 
                                         onClick={() => window.location.reload()}
                                         className="px-6 sm:px-8 h-10 sm:h-11 text-sm sm:text-base w-full sm:w-auto"
                                     >
-                                        Back to Home
+                                        {t.certBackHomeButton}
                                     </Button>
                                 </div>
                             </CardContent>
