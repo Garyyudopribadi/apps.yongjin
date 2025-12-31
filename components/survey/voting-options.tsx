@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@app/components/ui/card'
-import { CheckCircle, Utensils, Users, ThumbsUp } from 'lucide-react'
+import { CheckCircle, Utensils, Users, ThumbsUp, Flower } from 'lucide-react'
 
 interface VotingOptionsProps {
   selectedOption: 'a' | 'b' | null
@@ -62,13 +62,13 @@ export default function VotingOptions({ selectedOption, onVote, isSubmitting }: 
         >
           <CardContent className="p-3 text-center">
             <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" />
+              <Flower className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" />
             </div>
             <h4 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">
-              Duduk Lantai
+              Istirahat di Taman
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              Lesehan tikar
+              Duduk di area taman
             </p>
             {selectedOption === 'b' && (
               <motion.div

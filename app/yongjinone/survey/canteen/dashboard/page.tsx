@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@app/components/ui/card"
 import { Button } from "@app/components/ui/button"
 import { Input } from "@app/components/ui/input"
 import DefaultBackground from "@app/components/layout/default-background"
-import { Users, Utensils, Download, ArrowLeft, Table, Armchair, ChevronLeft, ChevronRight, LogOut } from "lucide-react"
+import { Users, Utensils, Download, ArrowLeft, Table, Flower, ChevronLeft, ChevronRight, LogOut } from "lucide-react"
 import DashboardAccess from '@app/components/survey/dashboard-access'
 import { supabase } from "@app/lib/supabase"
 
@@ -43,6 +43,8 @@ export default function Dashboard() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false)
 	const [passkey, setPasskey] = useState('')
 	const [dashboardError, setDashboardError] = useState('')
+
+	const isFirstLoad = useRef(true)
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -81,7 +83,7 @@ export default function Dashboard() {
 	useEffect(() => {
 		const fetchSurveyData = async (page: number = 1, search: string = '', verified: 'all' | 'verified' | 'unverified' = 'all', department: string = 'all') => {
 			try {
-				setIsLoading(true)
+				if (isFirstLoad.current) setIsLoading(true)
 				let query = supabase
 					.from('survey_kantin_yongjinone')
 					.select('id, nik, ktp, name, department, sex, option_a, option_b, date_verified', { count: 'exact' })
@@ -116,6 +118,7 @@ export default function Dashboard() {
 				console.error('Error fetching survey data:', error)
 			} finally {
 				setIsLoading(false)
+				isFirstLoad.current = false
 			}
 		}
 
@@ -152,7 +155,7 @@ export default function Dashboard() {
 					.eq('option_a', true)
 				setOptionA(optionACount || 0)
 
-				// Count option B (duduk di lantai)
+				// Count option B (istirahat di taman)
 				const { count: optionBCount } = await supabase
 					.from('survey_kantin_yongjinone')
 					.select('*', { count: 'exact', head: true })
@@ -200,7 +203,7 @@ export default function Dashboard() {
 						d.ktp,
 						d.name,
 						d.department,
-						d.option_a ? "Meja Makan" : "Duduk di Lantai",
+						d.option_a ? "Meja Makan" : "Istirahat di Taman",
 						d.date_verified ? new Date(d.date_verified).toLocaleString() : 'Unverified',
 					]),
 				]
@@ -360,7 +363,7 @@ export default function Dashboard() {
 						<CardContent className="p-6">
 							<div className="flex items-start justify-between">
 								<div>
-									<p className="text-sm text-slate-600">Duduk di Lantai</p>
+									<p className="text-sm text-slate-600">Istirahat di Taman</p>
 									<p className="text-2xl font-bold">{optionB}</p>
 									<p className="text-sm text-slate-500">{percentageB.toFixed(1)}%</p>
 									<div className="w-full bg-gray-200 rounded-full h-2 mt-2">
@@ -373,7 +376,7 @@ export default function Dashboard() {
 									</div>
 								</div>
 								<div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-									<Armchair className="w-6 h-6 text-red-600" />
+									<Flower className="w-6 h-6 text-red-600" />
 								</div>
 							</div>
 						</CardContent>
@@ -459,7 +462,7 @@ export default function Dashboard() {
 										<td className="p-2">{d.department}</td>
 										<td className="p-2">
 											{!d.option_a && !d.option_b ? "Belum Voting" : 
-											 d.option_a ? "Meja Makan" : "Duduk di Lantai"}
+											 d.option_a ? "Meja Makan" : "Istirahat di Taman"}
 										</td>
 										<td className="p-2">
 											{d.date_verified ? new Date(d.date_verified).toLocaleString() : "-"}
