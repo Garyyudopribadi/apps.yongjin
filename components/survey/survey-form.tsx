@@ -16,6 +16,8 @@ interface Participant {
   date_verified: string | null
   option_a: boolean | null
   option_b: boolean | null
+  option_c: boolean | null
+  option_d: boolean | null
 }
 
 interface SurveyFormProps {

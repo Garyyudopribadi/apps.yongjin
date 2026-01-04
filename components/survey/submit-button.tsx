@@ -5,7 +5,7 @@ import { Button } from '@app/components/ui/button'
 import { Send } from 'lucide-react'
 
 interface SubmitButtonProps {
-  selectedOption: 'a' | 'b' | null
+  selectedOption: 'a' | 'b' | 'c' | 'd' | null
   isSubmitting: boolean
   onSubmit: () => void
 }

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@app/
 import { Button } from "@app/components/ui/button"
 import { Input } from "@app/components/ui/input"
 import DefaultBackground from "@app/components/layout/default-background"
-import { Users, Utensils, Download, ArrowLeft, Table, Flower, ChevronLeft, ChevronRight, LogOut } from "lucide-react"
+import { Users, Utensils, Download, ArrowLeft, Table, Flower, ChevronLeft, ChevronRight, LogOut, Home, Store } from "lucide-react"
 import DashboardAccess from '@app/components/survey/dashboard-access'
 import { supabase } from "@app/lib/supabase"
 
@@ -19,6 +19,8 @@ interface SurveyData {
 	sex: string
 	option_a: boolean
 	option_b: boolean
+	option_c: boolean
+	option_d: boolean
 	date_verified: string | null
 }
 
@@ -34,6 +36,8 @@ export default function Dashboard() {
 	const [totalNotVoted, setTotalNotVoted] = useState(0)
 	const [optionA, setOptionA] = useState(0)
 	const [optionB, setOptionB] = useState(0)
+	const [optionC, setOptionC] = useState(0)
+	const [optionD, setOptionD] = useState(0)
 	const [totalEmployees, setTotalEmployees] = useState(0)
 	const [departments, setDepartments] = useState<string[]>([])
 
@@ -86,7 +90,7 @@ export default function Dashboard() {
 				if (isFirstLoad.current) setIsLoading(true)
 				let query = supabase
 					.from('survey_kantin_yongjinone')
-					.select('id, nik, ktp, name, department, sex, option_a, option_b, date_verified', { count: 'exact' })
+					.select('id, nik, ktp, name, department, sex, option_a, option_b, option_c, option_d, date_verified', { count: 'exact' })
 
 				// Apply filters
 				if (search) {
@@ -161,6 +165,20 @@ export default function Dashboard() {
 					.select('*', { count: 'exact', head: true })
 					.eq('option_b', true)
 				setOptionB(optionBCount || 0)
+
+				// Count option C (makan di rumah)
+				const { count: optionCCount } = await supabase
+					.from('survey_kantin_yongjinone')
+					.select('*', { count: 'exact', head: true })
+					.eq('option_c', true)
+				setOptionC(optionCCount || 0)
+
+				// Count option D (makan di rumah makan / warung / cafe)
+				const { count: optionDCount } = await supabase
+					.from('survey_kantin_yongjinone')
+					.select('*', { count: 'exact', head: true })
+					.eq('option_d', true)
+				setOptionD(optionDCount || 0)
 			} catch (error) {
 				console.error('Error fetching statistics:', error)
 			}
@@ -175,7 +193,7 @@ export default function Dashboard() {
 			try {
 				let query = supabase
 					.from('survey_kantin_yongjinone')
-					.select('id, nik, ktp, name, department, sex, option_a, option_b, date_verified')
+					.select('id, nik, ktp, name, department, sex, option_a, option_b, option_c, option_d, date_verified')
 
 				// Apply same filters as current view
 				if (searchTerm) {
@@ -198,14 +216,27 @@ export default function Dashboard() {
 
 				const rows = [
 					["NIK", "KTP", "Nama", "Department", "Pilihan", "Tanggal Verifikasi"],
-					...(data || []).map((d) => [
-						d.nik,
-						d.ktp,
-						d.name,
-						d.department,
-						d.option_a ? "Meja Makan" : "Istirahat di Taman",
-						d.date_verified ? new Date(d.date_verified).toLocaleString() : 'Unverified',
-					]),
+					...(data || []).map((d) => {
+						let pilihan = 'Belum Voting'
+						if (d.option_a) {
+							pilihan = 'Meja Makan'
+						} else if (d.option_b) {
+							pilihan = 'Istirahat di Taman'
+						} else if (d.option_c) {
+							pilihan = 'Makan di rumah'
+						} else if (d.option_d) {
+							pilihan = 'Makan di rumah makan (warung/cafe)'
+						}
+
+						return [
+							d.nik,
+							d.ktp,
+							d.name,
+							d.department,
+							pilihan,
+							d.date_verified ? new Date(d.date_verified).toLocaleString() : 'Unverified',
+						]
+					}),
 				]
 				const csv = rows.map((r) => r.join(",")).join("\n")
 				const blob = new Blob([csv], { type: "text/csv" })
@@ -243,6 +274,8 @@ export default function Dashboard() {
 	const total = totalEmployees
 	const percentageA = total > 0 ? (optionA / total) * 100 : 0
 	const percentageB = total > 0 ? (optionB / total) * 100 : 0
+	const percentageC = total > 0 ? (optionC / total) * 100 : 0
+	const percentageD = total > 0 ? (optionD / total) * 100 : 0
 	const percentageVoted = total > 0 ? (totalVoted / total) * 100 : 0
 
 	// Pagination logic - now server-side
@@ -297,7 +330,7 @@ export default function Dashboard() {
 					</div>
 				</motion.div>
 
-				<div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
 					<Card>
 						<CardContent className="p-6">
 							<div className="flex items-start justify-between">
@@ -377,6 +410,51 @@ export default function Dashboard() {
 								</div>
 								<div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
 									<Flower className="w-6 h-6 text-red-600" />
+								</div>
+							</div>
+						</CardContent>
+					</Card>
+
+					<Card>
+						<CardContent className="p-6">
+							<div className="flex items-start justify-between">
+								<div>
+									<p className="text-sm text-slate-600">Makan di rumah</p>
+									<p className="text-2xl font-bold">{optionC}</p>
+									<p className="text-sm text-slate-500">{percentageC.toFixed(1)}%</p>
+									<div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+										<motion.div
+											className="bg-emerald-600 h-2 rounded-full"
+											initial={{ width: 0 }}
+											animate={{ width: `${percentageC}%` }}
+											transition={{ duration: 1 }}
+										/>
+									</div>
+								</div>
+								<div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+									<Home className="w-6 h-6 text-emerald-600" />
+								</div>
+							</div>
+						</CardContent>
+					</Card>
+					<Card>
+						<CardContent className="p-6">
+							<div className="flex items-start justify-between">
+								<div>
+									<p className="text-sm text-slate-600">Makan di rumah makan</p>
+									<p className="text-2xl font-bold">{optionD}</p>
+									<p className="text-sm text-slate-500">{percentageD.toFixed(1)}%</p>
+									<div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+										<motion.div
+											className="bg-orange-600 h-2 rounded-full"
+											initial={{ width: 0 }}
+											animate={{ width: `${percentageD}%` }}
+											transition={{ duration: 1 }}
+										/>
+									</div>
+								</div>
+								<div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+									<Store className="w-6 h-6 text-orange-600" />
 								</div>
 							</div>
 						</CardContent>
@@ -461,8 +539,11 @@ export default function Dashboard() {
 										<td className="p-2">{d.name}</td>
 										<td className="p-2">{d.department}</td>
 										<td className="p-2">
-											{!d.option_a && !d.option_b ? "Belum Voting" : 
-											 d.option_a ? "Meja Makan" : "Istirahat di Taman"}
+											{(!d.option_a && !d.option_b && !d.option_c && !d.option_d) ? "Belum Voting" :
+											 d.option_a ? "Meja Makan" :
+											 d.option_b ? "Istirahat di Taman" :
+											 d.option_c ? "Makan di rumah" :
+											 "Makan di rumah makan (warung/cafe)"}
 										</td>
 										<td className="p-2">
 											{d.date_verified ? new Date(d.date_verified).toLocaleString() : "-"}

@@ -146,51 +146,96 @@ const DesignModal = ({
 
 const TopRatedNotification = ({
     onClick,
-    voteCounts
+    voteCounts,
+    footerRef
 }: {
     onClick: (id: string) => void;
     voteCounts: Record<string, number>;
+    footerRef: React.RefObject<HTMLDivElement | null>;
 }) => {
-    const [featuredId, setFeaturedId] = useState<string | null>(null);
+    const [topThree, setTopThree] = useState<Design[]>([]);
+    const [isMinimized, setIsMinimized] = useState(false);
+    const [isFooterVisible, setIsFooterVisible] = useState(false);
 
     useEffect(() => {
-        // Find the design with the highest real vote count
-                let maxVotes = -1;
-                let topId: string | null = null;
-        
-                DESIGNS.forEach(d => {
-                    const votes = voteCounts[d.id] || 0;
-                    if (votes > maxVotes) {
-                        maxVotes = votes;
-                        topId = d.id;
-                    }
-                });
-        
-                if (topId) {
-                    setFeaturedId(topId);
-                }
+        // Sort designs by vote count descending and take top 3
+        const sorted = DESIGNS.sort((a, b) => (voteCounts[b.id] || 0) - (voteCounts[a.id] || 0)).slice(0, 3);
+        setTopThree(sorted);
     }, [voteCounts]);
 
-    const featuredDesign = DESIGNS.find(d => d.id === featuredId);
-    if (!featuredDesign) return null;
+    useEffect(() => {
+        if (!footerRef.current) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => setIsFooterVisible(entry.isIntersecting),
+            { threshold: 0 }
+        );
+        observer.observe(footerRef.current);
+        return () => observer.disconnect();
+    }, [footerRef]);
+
+    const bottomPosition = isFooterVisible ? '6rem' : '2rem';
+
+    if (topThree.length === 0) return null;
+
+    if (isMinimized) {
+        return (
+            <motion.div
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 1, duration: 0.6, type: "spring" }}
+                className="fixed right-8 z-40 cursor-pointer"
+                style={{ bottom: bottomPosition }}
+                onClick={() => setIsMinimized(false)}
+            >
+                <div className="bg-white/80 backdrop-blur-xl border border-white/50 p-3 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center hover:scale-105 transition-transform duration-300">
+                    <div className="w-8 h-8 bg-gradient-to-br from-yellow-100 to-yellow-50 rounded-full flex items-center justify-center text-yellow-600 shadow-inner">
+                        <Trophy size={16} className="fill-current" />
+                    </div>
+                </div>
+            </motion.div>
+        );
+    }
 
     return (
         <motion.div
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 1, duration: 0.6, type: "spring" }}
-            className="fixed bottom-8 right-8 z-40 cursor-pointer"
-            onClick={() => onClick(featuredDesign.id)}
+            className="fixed right-8 z-40 max-w-xs"
+            style={{ bottom: bottomPosition }}
         >
-            <div className="bg-white/80 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center gap-4 max-w-xs hover:scale-105 transition-transform duration-300">
-                <div className="w-10 h-10 bg-gradient-to-br from-yellow-100 to-yellow-50 rounded-full flex items-center justify-center text-yellow-600 flex-shrink-0 shadow-inner">
-                    <Trophy size={18} className="fill-current" />
+            <div className="space-y-3">
+                <div className="flex justify-end">
+                    <button
+                        onClick={() => setIsMinimized(true)}
+                        className="bg-white/80 backdrop-blur-xl border border-white/50 p-2 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:scale-105 transition-transform duration-300"
+                    >
+                        <ChevronLeft size={16} className="rotate-90" />
+                    </button>
                 </div>
-                <div>
-                    <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-widest mb-0.5">Top Rated</p>
-                    <p className="text-sm font-bold text-gray-900 line-clamp-1">{featuredDesign.title}</p>
-                    <p className="text-[10px] text-gray-500">{voteCounts[featuredDesign.id] || 0} likes</p>
-                </div>
+                {topThree.map((design, index) => {
+                    const rank = index + 1;
+                    const rankColors = ['from-yellow-100 to-yellow-50', 'from-gray-100 to-gray-50', 'from-orange-100 to-orange-50'];
+                    const rankTextColors = ['text-yellow-600', 'text-gray-600', 'text-orange-600'];
+                    return (
+                        <div
+                            key={design.id}
+                            className="bg-white/80 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center gap-4 cursor-pointer hover:scale-105 transition-transform duration-300"
+                            onClick={() => onClick(design.id)}
+                        >
+                            <div className={`w-10 h-10 bg-gradient-to-br ${rankColors[index]} rounded-full flex items-center justify-center ${rankTextColors[index]} flex-shrink-0 shadow-inner`}>
+                                <Trophy size={18} className="fill-current" />
+                            </div>
+                            <div>
+                                <p className={`text-[10px] font-bold ${rankTextColors[index]} uppercase tracking-widest mb-0.5`}>
+                                    {rank === 1 ? 'Top Rated' : rank === 2 ? '2nd Place' : '3rd Place'}
+                                </p>
+                                <p className="text-sm font-bold text-gray-900 line-clamp-1">{design.title}</p>
+                                <p className="text-[10px] text-gray-500">{voteCounts[design.id] || 0} likes</p>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
         </motion.div>
     );
@@ -298,6 +343,7 @@ export default function VoteGreenDesignPage() {
     const [selectedDesignId, setSelectedDesignId] = useState<string | null>(null);
     const [activeCategory, setActiveCategory] = useState<'Lobby' | 'Poster'>('Lobby');
     const [mounted, setMounted] = useState(false);
+    const footerRef = useRef<HTMLDivElement>(null);
 
     // Fetch initial data
     useEffect(() => {
@@ -366,14 +412,14 @@ export default function VoteGreenDesignPage() {
                     {/* Logo from Navbar */}
                     <Link href="/" className="flex items-center gap-2">
                         <Image
-                            src="/yongjinlogo.png"
+                            src="/icon-152x152.png"
                             alt="Yongjin Logo"
-                            width={3000}
-                            height={1856}
-                            className="h-10 w-auto sm:h-12 sm:w-auto"
+                            width={40}
+                            height={40}
+                            className="h-10 w-10 sm:h-12 sm:w-12"
                             priority
                         />
-                        <span className="text-xl sm:text-2xl font-bold text-blue-600 tracking-tight">YONGJIN</span>
+                        <span className="text-xl sm:text-2xl font-bold text-primary tracking-tight">YONGJIN</span>
                     </Link>
 
                     <div className="text-xs font-bold bg-white/50 backdrop-blur-md px-4 py-1.5 rounded-full shadow-sm border border-white/50 text-gray-600 tracking-wide">
@@ -432,8 +478,11 @@ export default function VoteGreenDesignPage() {
             </main>
 
             {/* Footer */}
-            <footer className="py-8 bg-white/50 backdrop-blur-md border-t border-white/50 mt-auto">
+            <footer ref={footerRef} className="py-8 bg-white/50 backdrop-blur-md border-t border-white/50 mt-auto">
                 <div className="container mx-auto px-6 md:px-12 text-center space-y-2">
+                    <p className="text-xs text-gray-500 font-medium">
+                        Active Hours: Sunday - Friday, 7 AM - 4 PM
+                    </p>
                     <p className="text-xs text-gray-500 font-medium">
                         © 2025 PT.YONGJIN JAVASUKA GARMENT. All rights reserved.
                     </p>
@@ -443,7 +492,7 @@ export default function VoteGreenDesignPage() {
                 </div>
             </footer>
 
-            <TopRatedNotification onClick={setSelectedDesignId} voteCounts={voteCounts} />
+            <TopRatedNotification onClick={setSelectedDesignId} voteCounts={voteCounts} footerRef={footerRef} />
 
             <DesignModal
                 design={selectedDesign}

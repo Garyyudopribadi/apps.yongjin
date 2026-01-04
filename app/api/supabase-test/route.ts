@@ -1,10 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = 'https://phzyooddlafqozryxcqa.supabase.co'  // Replace with your Project URL from Supabase Dashboard > Settings > API
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBoenlvb2RkbGFmcW96cnl4Y3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwNTU4OTAsImV4cCI6MjA3NzYzMTg5MH0.CnwT-b-t4kxjFfbAjogb7dTFIAgkwdgPHgrB3QCmsc0'  // Replace with your anon public key
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+import { supabase } from '@app/lib/supabase'
 
 export async function GET() {
   try {

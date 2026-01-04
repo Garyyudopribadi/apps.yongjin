@@ -18,7 +18,7 @@ import { AlertCircle } from 'lucide-react'
 export default function CanteenSurvey() {
   const [inputValue, setInputValue] = useState('')
   const [currentParticipant, setCurrentParticipant] = useState<Participant | null>(null)
-  const [selectedOption, setSelectedOption] = useState<'a' | 'b' | null>(null)
+  const [selectedOption, setSelectedOption] = useState<'a' | 'b' | 'c' | 'd' | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showThumbsUpAnimation, setShowThumbsUpAnimation] = useState(false)
   const [error, setError] = useState('')
@@ -178,6 +178,10 @@ export default function CanteenSurvey() {
           setSelectedOption('a')
         } else if (participant.option_b) {
           setSelectedOption('b')
+        } else if (participant.option_c) {
+          setSelectedOption('c')
+        } else if (participant.option_d) {
+          setSelectedOption('d')
         }
       }
     } else {
@@ -185,7 +189,7 @@ export default function CanteenSurvey() {
     }
   }
 
-  const handleVote = (option: 'a' | 'b') => {
+  const handleVote = (option: 'a' | 'b' | 'c' | 'd') => {
     setSelectedOption(option)
     setShowThumbsUpAnimation(true)
     setTimeout(() => setShowThumbsUpAnimation(false), 2000)
@@ -201,6 +205,8 @@ export default function CanteenSurvey() {
       const surveyUpdate = {
         option_a: selectedOption === 'a',
         option_b: selectedOption === 'b',
+        option_c: selectedOption === 'c',
+        option_d: selectedOption === 'd',
         date_verified: new Date().toISOString()
       }
 
