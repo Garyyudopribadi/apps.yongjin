@@ -290,6 +290,8 @@ export default function SafetyMachineTraining() {
     const [pdfLoading, setPdfLoading] = useState(true)
     const MIN_READING_TIME = 59
 
+    const readingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
     const CERT_BASE_WIDTH = 1100
     const CERT_ASPECT_RATIO = 16 / 11
     const certificateViewportRef = useRef<HTMLDivElement | null>(null)
@@ -357,6 +359,27 @@ export default function SafetyMachineTraining() {
         setCaptchaNum1(Math.floor(Math.random() * 10) + 1)
         setCaptchaNum2(Math.floor(Math.random() * 10) + 1)
     }, [])
+
+    // Timer effect for reading time
+    useEffect(() => {
+        if (step === "training") {
+            readingIntervalRef.current = setInterval(() => {
+                setTimeSpentReading(prev => prev + 1)
+            }, 1000)
+        } else {
+            if (readingIntervalRef.current) {
+                clearInterval(readingIntervalRef.current)
+                readingIntervalRef.current = null
+            }
+        }
+
+        return () => {
+            if (readingIntervalRef.current) {
+                clearInterval(readingIntervalRef.current)
+                readingIntervalRef.current = null
+            }
+        }
+    }, [step])
 
     const handleValidation = async () => {
         setError("")
@@ -472,12 +495,6 @@ export default function SafetyMachineTraining() {
             } else {
                 setStep("training")
                 setPdfLoading(true)
-                // Start reading time tracker
-                const interval = setInterval(() => {
-                    setTimeSpentReading(prev => prev + 1)
-                }, 1000)
-                // Store interval ID for cleanup
-                ;(window as any).readingInterval = interval
             }
         } catch (err) {
             setError(t.errors.unexpected)
@@ -525,7 +542,7 @@ export default function SafetyMachineTraining() {
                 .update({
                     answer: answers,
                     score: finalScore,
-                    status: true,
+                    status: finalScore >= 80 ? true : false,
                     date_verified: new Date().toISOString(),
                 })
                 .eq("id", userData.id)
@@ -883,9 +900,6 @@ export default function SafetyMachineTraining() {
                                         variant="outline" 
                                         onClick={() => {
                                             setStep("validation")
-                                            if ((window as any).readingInterval) {
-                                                clearInterval((window as any).readingInterval)
-                                            }
                                         }}
                                         className="w-full sm:w-auto"
                                     >
