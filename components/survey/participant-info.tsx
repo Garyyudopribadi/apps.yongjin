@@ -23,10 +23,10 @@ export default function ParticipantInfo({ participant }: ParticipantInfoProps) {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
-      className="space-y-3"
+      className=""
     >
       <Card className="shadow-lg">
-        <CardHeader className="pb-2">
+        <CardHeader className="px-4 sm:px-6 pt-4 pb-3">
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
             Data Terverifikasi
@@ -40,16 +40,13 @@ export default function ParticipantInfo({ participant }: ParticipantInfoProps) {
             )}
           </CardDescription>
         </CardHeader>
-        <CardContent className="pb-2">
-          <div className="space-y-1 text-xs sm:text-sm">
-            <div className="flex justify-between">
-              <span className="text-slate-600 dark:text-slate-400">NIK:</span>
-              <span className="font-medium">{participant.nik}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-600 dark:text-slate-400">Dept:</span>
-              <span className="font-medium">{participant.department}</span>
-            </div>
+        <CardContent className="px-4 sm:px-6 pt-0 pb-4">
+          <div className="grid grid-cols-[72px_1fr] gap-x-3 gap-y-1 text-xs sm:text-sm">
+            <span className="text-slate-600 dark:text-slate-400">NIK</span>
+            <span className="font-medium text-right break-words">{participant.nik}</span>
+
+            <span className="text-slate-600 dark:text-slate-400">Dept</span>
+            <span className="font-medium break-words text-right">{participant.department}</span>
           </div>
         </CardContent>
       </Card>

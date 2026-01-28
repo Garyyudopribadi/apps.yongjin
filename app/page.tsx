@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Loader2, Utensils, Shield } from 'lucide-react'
+import { Loader2, Utensils, Shield, Toilet } from 'lucide-react'
 import DefaultBackground from '../components/layout/default-background'
 import Header from '../components/common/header'
 import ViewModeToggle from '../components/common/view-mode-toggle'
@@ -50,6 +50,16 @@ const menuItems: MenuItem[] = [
     color: "from-red-500 to-orange-500",
     gradient: "from-red-50 to-orange-50",
     href: "/e-training/safety-machine"
+  },
+  {
+    id: 5,
+    title: "Yongjin One - Survey Toilet",
+    description: "Survey application for toilet facility",
+    icon: <Toilet className="w-12 h-12" />,
+    features: ["Voting System", "Real-time Results", "Data Export", "Employee Feedback"],
+    color: "from-green-500 to-emerald-500",
+    gradient: "from-green-50 to-emerald-50",
+    href: "/yongjinone/survey/warehouse-toilet"
   }
 ]
 
