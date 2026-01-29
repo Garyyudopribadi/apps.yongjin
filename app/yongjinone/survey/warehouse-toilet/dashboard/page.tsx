@@ -12,9 +12,9 @@ import {
 	ChevronLeft,
 	ChevronRight,
 	Download,
-	Frown,
+	Check,
 	LogOut,
-	Smile,
+	X,
 	Toilet,
 	Users,
 } from "lucide-react"
@@ -390,7 +390,7 @@ export default function Dashboard() {
 									</div>
 								</div>
 								<div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
-									<Smile className="w-6 h-6 text-emerald-600" />
+									<Check className="w-6 h-6 text-emerald-600" />
 								</div>
 							</div>
 						</CardContent>
@@ -413,7 +413,7 @@ export default function Dashboard() {
 									</div>
 								</div>
 								<div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-									<Frown className="w-6 h-6 text-red-600" />
+									<X className="w-6 h-6 text-red-600" />
 								</div>
 							</div>
 						</CardContent>
@@ -423,7 +423,7 @@ export default function Dashboard() {
 				<Card>
 					<CardHeader>
 						<CardTitle>Data Peserta</CardTitle>
-						<CardDescription>Detail voting setiap peserta - Server-side pagination with database-level filtering</CardDescription>
+						<CardDescription>Detail voting setiap peserta</CardDescription>
 					</CardHeader>
 
 					<div className="px-6 pb-4">

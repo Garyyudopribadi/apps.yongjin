@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@app/components/ui/card'
-import { ThumbsUp, ThumbsDown, Smile, Frown } from 'lucide-react'
+import { ThumbsUp, ThumbsDown, Check, X } from 'lucide-react'
 
 interface VotingOptionsToiletProps {
     selectedOption: 'a' | 'b' | null
@@ -29,7 +29,7 @@ export default function VotingOptionsToilet({ selectedOption, onVote, isSubmitti
                 >
                     <CardContent className="p-3 text-center">
                         <div className="w-10 h-10 sm:w-16 sm:h-16 mx-auto mb-2 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                            <Smile className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600 dark:text-emerald-400" />
+                            <Check className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <h4 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">
                             Perlu
@@ -64,7 +64,7 @@ export default function VotingOptionsToilet({ selectedOption, onVote, isSubmitti
                 >
                     <CardContent className="p-3 text-center">
                         <div className="w-10 h-10 sm:w-16 sm:h-16 mx-auto mb-2 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                            <Frown className="w-6 h-6 sm:w-8 sm:h-8 text-red-600 dark:text-red-400" />
+                            <X className="w-6 h-6 sm:w-8 sm:h-8 text-red-600 dark:text-red-400" />
                         </div>
                         <h4 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">
                             Tidak perlu
