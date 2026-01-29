@@ -138,7 +138,7 @@ export default function WarehouseToiletSurvey() {
             setStep('voting')
 
             // Pre-select previous vote should be reset or mapped correctly?
-            // Assuming mapping: option_a = Puas, option_b = Kurang Puas
+            // Assuming mapping: option_a = Perlu, option_b = Tidak perlu
             if (participant.date_verified) {
                 if (participant.option_a) {
                     setSelectedOption('a')
@@ -234,6 +234,15 @@ export default function WarehouseToiletSurvey() {
                     {step === 'voting' && currentParticipant && (
                         <div className="space-y-3">
                             <ParticipantInfo participant={currentParticipant} />
+
+                            <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/40 p-3">
+                                <p className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100">
+                                    Apakah perlu penambahan toilet?
+                                </p>
+                                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-0.5">
+                                    Pilih salah satu opsi di bawah ini.
+                                </p>
+                            </div>
 
                             <VotingOptionsToilet
                                 selectedOption={selectedOption}

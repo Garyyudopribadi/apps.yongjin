@@ -209,13 +209,13 @@ export default function Dashboard() {
 				if (error) throw error
 
 				const rows = [
-					["NIK", "KTP", "Nama", "Department", "Pilihan", "Tanggal Verifikasi"],
+					["NIK", "KTP", "Nama", "Department", "Jawaban", "Tanggal Verifikasi"],
 					...(data || []).map((d) => {
 						let pilihan = "Belum Voting"
 						if (d.option_a) {
-							pilihan = "Puas"
+							pilihan = "Perlu"
 						} else if (d.option_b) {
-							pilihan = "Kurang Puas"
+							pilihan = "Tidak perlu"
 						}
 
 						return [
@@ -324,7 +324,7 @@ export default function Dashboard() {
 					<div className="flex items-center justify-between mb-6">
 						<div>
 							<h1 className="text-2xl font-bold">Dashboard Survey Toilet Warehouse</h1>
-							<p className="text-sm text-slate-600">Hasil voting kepuasan toilet warehouse</p>
+							<p className="text-sm text-slate-600">Hasil voting kebutuhan penambahan toilet</p>
 						</div>
 						<div className="flex gap-2">
 							<Button variant="outline" onClick={handleBack} className="flex items-center gap-2">
@@ -377,7 +377,7 @@ export default function Dashboard() {
 						<CardContent className="p-6">
 							<div className="flex items-start justify-between">
 								<div>
-									<p className="text-sm text-slate-600">Puas</p>
+									<p className="text-sm text-slate-600">Perlu</p>
 									<p className="text-2xl font-bold">{optionA}</p>
 									<p className="text-sm text-slate-500">{percentageA.toFixed(1)}%</p>
 									<div className="w-full bg-gray-200 rounded-full h-2 mt-2">
@@ -400,7 +400,7 @@ export default function Dashboard() {
 						<CardContent className="p-6">
 							<div className="flex items-start justify-between">
 								<div>
-									<p className="text-sm text-slate-600">Kurang Puas</p>
+									<p className="text-sm text-slate-600">Tidak perlu</p>
 									<p className="text-2xl font-bold">{optionB}</p>
 									<p className="text-sm text-slate-500">{percentageB.toFixed(1)}%</p>
 									<div className="w-full bg-gray-200 rounded-full h-2 mt-2">
@@ -490,7 +490,7 @@ export default function Dashboard() {
 									<th className="p-2 text-left">NIK</th>
 									<th className="p-2 text-left">Name</th>
 									<th className="p-2 text-left">Department</th>
-									<th className="p-2 text-left">Pilihan</th>
+										<th className="p-2 text-left">Jawaban</th>
 									<th className="p-2 text-left">Tanggal Verifikasi</th>
 								</tr>
 							</thead>
@@ -502,7 +502,7 @@ export default function Dashboard() {
 										<td className="p-2">{d.name}</td>
 										<td className="p-2 text-justify">{d.department}</td>
 										<td className="p-2">
-											{!d.option_a && !d.option_b ? "Belum Voting" : d.option_a ? "Puas" : "Kurang Puas"}
+											{!d.option_a && !d.option_b ? "Belum Voting" : d.option_a ? "Perlu" : "Tidak perlu"}
 										</td>
 										<td className="p-2">{d.date_verified ? new Date(d.date_verified).toLocaleString() : "-"}</td>
 									</tr>

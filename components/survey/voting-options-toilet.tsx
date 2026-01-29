@@ -15,7 +15,7 @@ export default function VotingOptionsToilet({ selectedOption, onVote, isSubmitti
 
     return (
         <div className="grid grid-cols-2 gap-3">
-            {/* Option A - Puas */}
+            {/* Option A - Perlu */}
             <motion.div
                 whileHover={{ scale: disabled ? 1 : 1.02 }}
                 whileTap={{ scale: disabled ? 1 : 0.98 }}
@@ -32,10 +32,10 @@ export default function VotingOptionsToilet({ selectedOption, onVote, isSubmitti
                             <Smile className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <h4 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">
-                            Puas
+                            Perlu
                         </h4>
                         <p className="text-xs text-slate-600 dark:text-slate-400">
-                            Fasilitas bersih & nyaman
+                            Perlu penambahan toilet
                         </p>
                         {selectedOption === 'a' && (
                             <motion.div
@@ -50,7 +50,7 @@ export default function VotingOptionsToilet({ selectedOption, onVote, isSubmitti
                 </Card>
             </motion.div>
 
-            {/* Option B - Kurang Puas */}
+            {/* Option B - Tidak perlu */}
             <motion.div
                 whileHover={{ scale: disabled ? 1 : 1.02 }}
                 whileTap={{ scale: disabled ? 1 : 0.98 }}
@@ -67,10 +67,10 @@ export default function VotingOptionsToilet({ selectedOption, onVote, isSubmitti
                             <Frown className="w-6 h-6 sm:w-8 sm:h-8 text-red-600 dark:text-red-400" />
                         </div>
                         <h4 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">
-                            Kurang Puas
+                            Tidak perlu
                         </h4>
                         <p className="text-xs text-slate-600 dark:text-slate-400">
-                            Perlu perbaikan & peningkatan
+                            Tidak perlu penambahan toilet
                         </p>
                         {selectedOption === 'b' && (
                             <motion.div
