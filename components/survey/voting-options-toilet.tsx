@@ -15,52 +15,17 @@ export default function VotingOptionsToilet({ selectedOption, onVote, isSubmitti
 
     return (
         <div className="grid grid-cols-2 gap-3">
-            {/* Option A - Perlu */}
+            {/* Option A - Tidak perlu */}
             <motion.div
                 whileHover={{ scale: disabled ? 1 : 1.02 }}
                 whileTap={{ scale: disabled ? 1 : 0.98 }}
             >
                 <Card
                     className={`cursor-pointer transition-all duration-300 h-full ${selectedOption === 'a'
-                        ? 'ring-2 ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
-                        : 'hover:shadow-lg'
-                        } ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}
-                    onClick={() => !disabled && onVote('a')}
-                >
-                    <CardContent className="p-3 text-center">
-                        <div className="w-10 h-10 sm:w-16 sm:h-16 mx-auto mb-2 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                            <Check className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600 dark:text-emerald-400" />
-                        </div>
-                        <h4 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">
-                            Perlu
-                        </h4>
-                        <p className="text-xs text-slate-600 dark:text-slate-400">
-                            Perlu penambahan toilet
-                        </p>
-                        {selectedOption === 'a' && (
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="mt-2"
-                            >
-                                <ThumbsUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 mx-auto" />
-                            </motion.div>
-                        )}
-                    </CardContent>
-                </Card>
-            </motion.div>
-
-            {/* Option B - Tidak perlu */}
-            <motion.div
-                whileHover={{ scale: disabled ? 1 : 1.02 }}
-                whileTap={{ scale: disabled ? 1 : 0.98 }}
-            >
-                <Card
-                    className={`cursor-pointer transition-all duration-300 h-full ${selectedOption === 'b'
                         ? 'ring-2 ring-red-500 bg-red-50 dark:bg-red-900/20'
                         : 'hover:shadow-lg'
                         } ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}
-                    onClick={() => !disabled && onVote('b')}
+                    onClick={() => !disabled && onVote('a')}
                 >
                     <CardContent className="p-3 text-center">
                         <div className="w-10 h-10 sm:w-16 sm:h-16 mx-auto mb-2 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
@@ -72,13 +37,48 @@ export default function VotingOptionsToilet({ selectedOption, onVote, isSubmitti
                         <p className="text-xs text-slate-600 dark:text-slate-400">
                             Tidak perlu penambahan toilet
                         </p>
-                        {selectedOption === 'b' && (
+                        {selectedOption === 'a' && (
                             <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 className="mt-2"
                             >
                                 <ThumbsDown className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 mx-auto" />
+                            </motion.div>
+                        )}
+                    </CardContent>
+                </Card>
+            </motion.div>
+
+            {/* Option B - Perlu */}
+            <motion.div
+                whileHover={{ scale: disabled ? 1 : 1.02 }}
+                whileTap={{ scale: disabled ? 1 : 0.98 }}
+            >
+                <Card
+                    className={`cursor-pointer transition-all duration-300 h-full ${selectedOption === 'b'
+                        ? 'ring-2 ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
+                        : 'hover:shadow-lg'
+                        } ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    onClick={() => !disabled && onVote('b')}
+                >
+                    <CardContent className="p-3 text-center">
+                        <div className="w-10 h-10 sm:w-16 sm:h-16 mx-auto mb-2 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                            <Check className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <h4 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">
+                            Perlu
+                        </h4>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                            Perlu penambahan toilet
+                        </p>
+                        {selectedOption === 'b' && (
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="mt-2"
+                            >
+                                <ThumbsUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 mx-auto" />
                             </motion.div>
                         )}
                     </CardContent>

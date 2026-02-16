@@ -213,9 +213,9 @@ export default function Dashboard() {
 					...(data || []).map((d) => {
 						let pilihan = "Belum Voting"
 						if (d.option_a) {
-							pilihan = "Perlu"
-						} else if (d.option_b) {
 							pilihan = "Tidak perlu"
+						} else if (d.option_b) {
+							pilihan = "Perlu"
 						}
 
 						return [
@@ -377,20 +377,20 @@ export default function Dashboard() {
 						<CardContent className="p-6">
 							<div className="flex items-start justify-between">
 								<div>
-									<p className="text-sm text-slate-600">Perlu</p>
+									<p className="text-sm text-slate-600">Tidak perlu</p>
 									<p className="text-2xl font-bold">{optionA}</p>
 									<p className="text-sm text-slate-500">{percentageA.toFixed(1)}%</p>
 									<div className="w-full bg-gray-200 rounded-full h-2 mt-2">
 										<motion.div
-											className="bg-emerald-600 h-2 rounded-full"
+											className="bg-red-600 h-2 rounded-full"
 											initial={{ width: 0 }}
 											animate={{ width: `${percentageA}%` }}
 											transition={{ duration: 1 }}
 										/>
 									</div>
 								</div>
-								<div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
-									<Check className="w-6 h-6 text-emerald-600" />
+								<div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+									<X className="w-6 h-6 text-red-600" />
 								</div>
 							</div>
 						</CardContent>
@@ -400,20 +400,20 @@ export default function Dashboard() {
 						<CardContent className="p-6">
 							<div className="flex items-start justify-between">
 								<div>
-									<p className="text-sm text-slate-600">Tidak perlu</p>
+									<p className="text-sm text-slate-600">Perlu</p>
 									<p className="text-2xl font-bold">{optionB}</p>
 									<p className="text-sm text-slate-500">{percentageB.toFixed(1)}%</p>
 									<div className="w-full bg-gray-200 rounded-full h-2 mt-2">
 										<motion.div
-											className="bg-red-600 h-2 rounded-full"
+											className="bg-emerald-600 h-2 rounded-full"
 											initial={{ width: 0 }}
 											animate={{ width: `${percentageB}%` }}
 											transition={{ duration: 1 }}
 										/>
 									</div>
 								</div>
-								<div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-									<X className="w-6 h-6 text-red-600" />
+								<div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+									<Check className="w-6 h-6 text-emerald-600" />
 								</div>
 							</div>
 						</CardContent>
@@ -502,7 +502,7 @@ export default function Dashboard() {
 										<td className="p-2">{d.name}</td>
 										<td className="p-2 text-justify">{d.department}</td>
 										<td className="p-2">
-											{!d.option_a && !d.option_b ? "Belum Voting" : d.option_a ? "Perlu" : "Tidak perlu"}
+											{!d.option_a && !d.option_b ? "Belum Voting" : d.option_a ? "Tidak perlu" : "Perlu"}
 										</td>
 										<td className="p-2">{d.date_verified ? new Date(d.date_verified).toLocaleString() : "-"}</td>
 									</tr>
