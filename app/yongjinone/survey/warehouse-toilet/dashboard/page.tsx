@@ -12,11 +12,10 @@ import {
 	ChevronLeft,
 	ChevronRight,
 	Download,
-	Check,
 	LogOut,
-	X,
 	Toilet,
 	Users,
+	MapPin,
 } from "lucide-react"
 
 interface SurveyData {
@@ -26,8 +25,10 @@ interface SurveyData {
 	name: string
 	department: string
 	sex: string
-	option_a: boolean
-	option_b: boolean
+	preferred_toilet?: string
+	reason_preference?: string
+	nearest_toilet?: string
+	suggestion_improvement?: string
 	date_verified: string | null
 }
 
@@ -41,10 +42,12 @@ export default function Dashboard() {
 	const [departmentFilter, setDepartmentFilter] = useState<string>("all")
 	const [totalVoted, setTotalVoted] = useState(0)
 	const [totalNotVoted, setTotalNotVoted] = useState(0)
-	const [optionA, setOptionA] = useState(0)
-	const [optionB, setOptionB] = useState(0)
 	const [totalEmployees, setTotalEmployees] = useState(0)
+	const [percentageVoted, setPercentageVoted] = useState(0)
 	const [departments, setDepartments] = useState<string[]>([])
+
+	// Stats for Preferred Toilet
+	const [statsPreferred, setStatsPreferred] = useState<{ [key: string]: number }>({})
 
 	const [currentPage, setCurrentPage] = useState(1)
 	const [itemsPerPage] = useState(10)
@@ -107,7 +110,7 @@ export default function Dashboard() {
 				if (isFirstLoad.current) setIsLoading(true)
 				let query = supabase
 					.from("survey_warehousetoilet_yongjinone")
-					.select("id, nik, ktp, name, department, sex, option_a, option_b, date_verified", { count: "exact" })
+					.select("id, nik, ktp, name, department, sex, preferred_toilet, reason_preference, nearest_toilet, suggestion_improvement, date_verified", { count: "exact" })
 
 				if (search) {
 					query = query.or(`name.ilike.%${search}%,nik.ilike.%${search}%,ktp.ilike.%${search}%`)
@@ -153,11 +156,13 @@ export default function Dashboard() {
 					.select("*", { count: "exact", head: true })
 				setTotalEmployees(totalEmployeesCount || 0)
 
-				const { count: votedCount } = await supabase
+				const { count: votedCount, data: votedData } = await supabase
 					.from("survey_warehousetoilet_yongjinone")
-					.select("*", { count: "exact", head: true })
+					.select("preferred_toilet", { count: "exact" })
 					.not("date_verified", "is", null)
+
 				setTotalVoted(votedCount || 0)
+				setPercentageVoted((totalEmployeesCount || 0) > 0 ? ((votedCount || 0) / (totalEmployeesCount || 0)) * 100 : 0)
 
 				const { count: notVotedCount } = await supabase
 					.from("survey_warehousetoilet_yongjinone")
@@ -165,17 +170,16 @@ export default function Dashboard() {
 					.is("date_verified", null)
 				setTotalNotVoted(notVotedCount || 0)
 
-				const { count: optionACount } = await supabase
-					.from("survey_warehousetoilet_yongjinone")
-					.select("*", { count: "exact", head: true })
-					.eq("option_a", true)
-				setOptionA(optionACount || 0)
+				// Calculate stats for preferred toilet
+				const stats: { [key: string]: number } = {}
+				if (votedData) {
+					votedData.forEach((item: any) => {
+						const toilet = item.preferred_toilet || 'Unspecified'
+						stats[toilet] = (stats[toilet] || 0) + 1
+					})
+				}
+				setStatsPreferred(stats)
 
-				const { count: optionBCount } = await supabase
-					.from("survey_warehousetoilet_yongjinone")
-					.select("*", { count: "exact", head: true })
-					.eq("option_b", true)
-				setOptionB(optionBCount || 0)
 			} catch (error) {
 				console.error("Error fetching statistics:", error)
 			}
@@ -189,7 +193,7 @@ export default function Dashboard() {
 			try {
 				let query = supabase
 					.from("survey_warehousetoilet_yongjinone")
-					.select("id, nik, ktp, name, department, sex, option_a, option_b, date_verified")
+					.select("id, nik, ktp, name, department, sex, preferred_toilet, reason_preference, nearest_toilet, suggestion_improvement, date_verified")
 
 				if (searchTerm) {
 					query = query.or(`name.ilike.%${searchTerm}%,nik.ilike.%${searchTerm}%,ktp.ilike.%${searchTerm}%`)
@@ -209,21 +213,17 @@ export default function Dashboard() {
 				if (error) throw error
 
 				const rows = [
-					["NIK", "KTP", "Nama", "Department", "Jawaban", "Tanggal Verifikasi"],
+					["NIK", "KTP", "Nama", "Department", "Toilet Pilihan", "Alasan", "Toilet Terdekat (Persepsi)", "Saran", "Tanggal Verifikasi"],
 					...(data || []).map((d) => {
-						let pilihan = "Belum Voting"
-						if (d.option_a) {
-							pilihan = "Tidak perlu"
-						} else if (d.option_b) {
-							pilihan = "Perlu"
-						}
-
 						return [
 							d.nik,
 							d.ktp,
 							d.name,
 							d.department,
-							pilihan,
+							d.preferred_toilet || "-",
+							`"${(d.reason_preference || "").replace(/"/g, '""')}"`, // Escape quotes for CSV
+							`"${(d.nearest_toilet || "").replace(/"/g, '""')}"`,
+							`"${(d.suggestion_improvement || "").replace(/"/g, '""')}"`,
 							d.date_verified ? new Date(d.date_verified).toLocaleString() : "Unverified",
 						]
 					}),
@@ -263,9 +263,6 @@ export default function Dashboard() {
 	}
 
 	const total = totalEmployees
-	const percentageA = total > 0 ? (optionA / total) * 100 : 0
-	const percentageB = total > 0 ? (optionB / total) * 100 : 0
-	const percentageVoted = total > 0 ? (totalVoted / total) * 100 : 0
 
 	const totalPages = Math.ceil(totalRecords / itemsPerPage)
 	const startIndex = (currentPage - 1) * itemsPerPage
@@ -324,7 +321,7 @@ export default function Dashboard() {
 					<div className="flex items-center justify-between mb-6">
 						<div>
 							<h1 className="text-2xl font-bold">Dashboard Survey Toilet Warehouse</h1>
-							<p className="text-sm text-slate-600">Hasil voting kebutuhan penambahan toilet</p>
+							<p className="text-sm text-slate-600">Hasil voting & aspirasi karyawan</p>
 						</div>
 						<div className="flex gap-2">
 							<Button variant="outline" onClick={handleBack} className="flex items-center gap-2">
@@ -334,13 +331,13 @@ export default function Dashboard() {
 					</div>
 				</motion.div>
 
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
 					<Card>
 						<CardContent className="p-6">
 							<div className="flex items-start justify-between">
 								<div>
 									<p className="text-sm text-slate-600">Total Employees</p>
-									<p className="text-2xl font-bold">{total}</p>
+									<p className="text-2xl font-bold">{totalEmployees}</p>
 								</div>
 								<div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
 									<Users className="w-6 h-6 text-blue-600" />
@@ -353,7 +350,7 @@ export default function Dashboard() {
 						<CardContent className="p-6">
 							<div className="flex items-start justify-between">
 								<div>
-									<p className="text-sm text-slate-600">Total Votes</p>
+									<p className="text-sm text-slate-600">Total Response</p>
 									<p className="text-2xl font-bold">{totalVoted}</p>
 									<p className="text-sm text-slate-500">{percentageVoted.toFixed(1)}% voted</p>
 									<div className="w-full bg-gray-200 rounded-full h-2 mt-2">
@@ -364,7 +361,6 @@ export default function Dashboard() {
 											transition={{ duration: 1 }}
 										/>
 									</div>
-									<p className="text-xs text-slate-500 mt-1">{totalVoted} voted • {totalNotVoted} not voted</p>
 								</div>
 								<div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
 									<Toilet className="w-6 h-6 text-purple-600" />
@@ -373,57 +369,41 @@ export default function Dashboard() {
 						</CardContent>
 					</Card>
 
-					<Card>
-						<CardContent className="p-6">
-							<div className="flex items-start justify-between">
-								<div>
-									<p className="text-sm text-slate-600">Tidak perlu</p>
-									<p className="text-2xl font-bold">{optionA}</p>
-									<p className="text-sm text-slate-500">{percentageA.toFixed(1)}%</p>
-									<div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-										<motion.div
-											className="bg-red-600 h-2 rounded-full"
-											initial={{ width: 0 }}
-											animate={{ width: `${percentageA}%` }}
-											transition={{ duration: 1 }}
-										/>
+					{/* Render stats for preferred toilets dynamically or hardcoded if specific ones needed */}
+					{['Dekat Cutting', 'Lantai 3', 'Toilet Luar'].map(option => {
+						const count = statsPreferred[option] || 0
+						const pct = totalVoted > 0 ? (count / totalVoted) * 100 : 0
+						return (
+							<Card key={option}>
+								<CardContent className="p-6">
+									<div className="flex items-start justify-between">
+										<div>
+											<p className="text-sm text-slate-600 line-clamp-1" title={option}>{option}</p>
+											<p className="text-2xl font-bold">{count}</p>
+											<p className="text-sm text-slate-500">{pct.toFixed(1)}%</p>
+											<div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+												<motion.div
+													className="bg-indigo-600 h-2 rounded-full"
+													initial={{ width: 0 }}
+													animate={{ width: `${pct}%` }}
+													transition={{ duration: 1 }}
+												/>
+											</div>
+										</div>
+										<div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
+											<MapPin className="w-6 h-6 text-indigo-600" />
+										</div>
 									</div>
-								</div>
-								<div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-									<X className="w-6 h-6 text-red-600" />
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-
-					<Card>
-						<CardContent className="p-6">
-							<div className="flex items-start justify-between">
-								<div>
-									<p className="text-sm text-slate-600">Perlu</p>
-									<p className="text-2xl font-bold">{optionB}</p>
-									<p className="text-sm text-slate-500">{percentageB.toFixed(1)}%</p>
-									<div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-										<motion.div
-											className="bg-emerald-600 h-2 rounded-full"
-											initial={{ width: 0 }}
-											animate={{ width: `${percentageB}%` }}
-											transition={{ duration: 1 }}
-										/>
-									</div>
-								</div>
-								<div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
-									<Check className="w-6 h-6 text-emerald-600" />
-								</div>
-							</div>
-						</CardContent>
-					</Card>
+								</CardContent>
+							</Card>
+						)
+					})}
 				</div>
 
 				<Card>
 					<CardHeader>
-						<CardTitle>Data Peserta</CardTitle>
-						<CardDescription>Detail voting setiap peserta</CardDescription>
+						<CardTitle>Data Karyawan</CardTitle>
+						<CardDescription>Detail jawaban setiap karyawan</CardDescription>
 					</CardHeader>
 
 					<div className="px-6 pb-4">
@@ -476,7 +456,7 @@ export default function Dashboard() {
 									Clear Filters
 								</Button>
 								<Button variant="outline" onClick={handleExport} className="flex items-center gap-2">
-									<Download className="w-4 h-4" />Export
+									<Download className="w-4 h-4" />Export CSV
 								</Button>
 							</div>
 						</div>
@@ -485,35 +465,63 @@ export default function Dashboard() {
 					<CardContent className="overflow-x-auto">
 						<table className="w-full text-sm">
 							<thead>
-								<tr className="border-b">
-									<th className="p-2 text-left">No.</th>
-									<th className="p-2 text-left">NIK</th>
-									<th className="p-2 text-left">Name</th>
-									<th className="p-2 text-left">Department</th>
-										<th className="p-2 text-left">Jawaban</th>
-									<th className="p-2 text-left">Tanggal Verifikasi</th>
+								<tr className="border-b bg-slate-50 dark:bg-slate-900/50">
+									<th className="p-3 text-left font-medium">No</th>
+									<th className="p-3 text-left font-medium">NIK/Nama</th>
+									<th className="p-3 text-left font-medium">Department</th>
+									<th className="p-3 text-left font-medium">Toilet Pilihan</th>
+									<th className="p-3 text-left font-medium md:table-cell hidden">Alasan</th>
+									<th className="p-3 text-left font-medium md:table-cell hidden">Toilet Terdekat</th>
+									<th className="p-3 text-left font-medium md:table-cell hidden">Saran</th>
+									<th className="p-3 text-left font-medium">Tgl Verifikasi</th>
 								</tr>
 							</thead>
 							<tbody>
 								{surveyData.map((d, index) => (
-									<tr key={d.id || d.nik} className="border-b">
-										<td className="p-2">{startIndex + index + 1}</td>
-										<td className="p-2">{d.nik}</td>
-										<td className="p-2">{d.name}</td>
-										<td className="p-2 text-justify">{d.department}</td>
-										<td className="p-2">
-											{!d.option_a && !d.option_b ? "Belum Voting" : d.option_a ? "Tidak perlu" : "Perlu"}
+									<tr key={d.id || d.nik} className="border-b hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+										<td className="p-3 align-top text-slate-500">{startIndex + index + 1}</td>
+										<td className="p-3 align-top">
+											<div className="font-medium text-slate-900 dark:text-slate-100">{d.name}</div>
+											<div className="text-xs text-slate-500">{d.nik}</div>
 										</td>
-										<td className="p-2">{d.date_verified ? new Date(d.date_verified).toLocaleString() : "-"}</td>
+										<td className="p-3 align-top">{d.department}</td>
+										<td className="p-3 align-top">
+											{d.preferred_toilet ? (
+												<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+													{d.preferred_toilet}
+												</span>
+											) : (
+												<span className="text-slate-400 italic">Belum mengisi</span>
+											)}
+										</td>
+										<td className="p-3 align-top max-w-[200px] md:table-cell hidden text-slate-600 dark:text-slate-300 truncate" title={d.reason_preference}>
+											{d.reason_preference}
+										</td>
+										<td className="p-3 align-top max-w-[150px] md:table-cell hidden text-slate-600 dark:text-slate-300 truncate" title={d.nearest_toilet}>
+											{d.nearest_toilet}
+										</td>
+										<td className="p-3 align-top max-w-[200px] md:table-cell hidden text-slate-600 dark:text-slate-300 truncate" title={d.suggestion_improvement}>
+											{d.suggestion_improvement}
+										</td>
+										<td className="p-3 align-top text-slate-500 text-xs">
+											{d.date_verified ? new Date(d.date_verified).toLocaleString('id-ID', { year: '2-digit', month: '2-digit', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "-"}
+										</td>
 									</tr>
 								))}
+								{surveyData.length === 0 && !isLoading && (
+									<tr>
+										<td colSpan={8} className="p-8 text-center text-slate-500">
+											Tidak ada data ditemukan.
+										</td>
+									</tr>
+								)}
 							</tbody>
 						</table>
 
 						{totalPages > 1 && (
 							<div className="flex items-center justify-between mt-4 px-2">
-								<div className="text-sm text-gray-700">
-									Showing page {currentPage} of {totalPages} ({totalRecords} total filtered records)
+								<div className="text-sm text-gray-700 dark:text-gray-400">
+									Page {currentPage} of {totalPages}
 								</div>
 								<div className="flex items-center space-x-2">
 									<Button
@@ -525,32 +533,7 @@ export default function Dashboard() {
 										<ChevronLeft className="w-4 h-4" />
 									</Button>
 
-									<div className="flex space-x-1">
-										{Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-											let pageNum
-											if (totalPages <= 5) {
-												pageNum = i + 1
-											} else if (currentPage <= 3) {
-												pageNum = i + 1
-											} else if (currentPage >= totalPages - 2) {
-												pageNum = totalPages - 4 + i
-											} else {
-												pageNum = currentPage - 2 + i
-											}
-
-											return (
-												<Button
-													key={pageNum}
-													variant={currentPage === pageNum ? "default" : "outline"}
-													size="sm"
-													onClick={() => setCurrentPage(pageNum)}
-													className="w-8 h-8 p-0"
-												>
-													{pageNum}
-												</Button>
-											)
-										})}
-									</div>
+									<span className="text-xs text-slate-500">...</span>
 
 									<Button
 										variant="outline"

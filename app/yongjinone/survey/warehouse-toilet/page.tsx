@@ -3,24 +3,24 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import DefaultBackground from '@app/components/layout/default-background'
-import ThumbsUpAnimation from '@app/components/survey/thumbs-up-animation'
 import SurveyForm, { type Participant } from '@app/components/survey/survey-form'
 import ParticipantInfo from '@app/components/survey/participant-info'
-import VotingOptionsToilet from '@app/components/survey/voting-options-toilet'
 import SubmitButton from '@app/components/survey/submit-button'
 import Success from '@app/components/survey/success'
 import SurveyHeader from '@app/components/survey/survey-header'
 import DashboardButton from '@app/components/survey/dashboard-button'
 import DashboardAccess from '@app/components/survey/dashboard-access'
 import { supabase } from '@app/lib/supabase'
-import { AlertCircle, Toilet } from 'lucide-react'
+import { AlertCircle, Toilet, CheckCircle2 } from 'lucide-react'
+import { Label } from '@app/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@app/components/ui/radio-group'
+import { Textarea } from '@app/components/ui/textarea'
+import { Input } from '@app/components/ui/input'
 
 export default function WarehouseToiletSurvey() {
     const [inputValue, setInputValue] = useState('')
     const [currentParticipant, setCurrentParticipant] = useState<Participant | null>(null)
-    const [selectedOption, setSelectedOption] = useState<'a' | 'b' | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [showThumbsUpAnimation, setShowThumbsUpAnimation] = useState(false)
     const [error, setError] = useState('')
     const [step, setStep] = useState<'input' | 'voting' | 'success'>('input')
     const [showDashboardModal, setShowDashboardModal] = useState(false)
@@ -28,6 +28,12 @@ export default function WarehouseToiletSurvey() {
     const [dashboardError, setDashboardError] = useState('')
     const [participants, setParticipants] = useState<Participant[]>([])
     const [isLoadingParticipants, setIsLoadingParticipants] = useState(true)
+
+    // New state for 4 questions
+    const [preferredToilet, setPreferredToilet] = useState<string>('')
+    const [reasonPreference, setReasonPreference] = useState('')
+    const [nearestToilet, setNearestToilet] = useState('')
+    const [suggestionImprovement, setSuggestionImprovement] = useState('')
 
     useEffect(() => {
         // Fetch all participants from Supabase for verification
@@ -137,36 +143,58 @@ export default function WarehouseToiletSurvey() {
             setCurrentParticipant(participant)
             setStep('voting')
 
-            // Pre-select previous vote should be reset or mapped correctly?
-            // Assuming mapping: option_a = Perlu, option_b = Tidak perlu
+            // Reset form fields
+            setPreferredToilet('')
+            setReasonPreference('')
+            setNearestToilet('')
+            setSuggestionImprovement('')
+
+            // Pre-fill if already voted (optional, checking if columns exist in type might be tricky if not updated locally yet)
             if (participant.date_verified) {
-                if (participant.option_a) {
-                    setSelectedOption('a')
-                } else if (participant.option_b) {
-                    setSelectedOption('b')
-                }
+                // @ts-ignore - dynamic properties
+                if (participant.preferred_toilet) setPreferredToilet(participant.preferred_toilet)
+                // @ts-ignore
+                if (participant.reason_preference) setReasonPreference(participant.reason_preference)
+                // @ts-ignore
+                if (participant.nearest_toilet) setNearestToilet(participant.nearest_toilet)
+                // @ts-ignore
+                if (participant.suggestion_improvement) setSuggestionImprovement(participant.suggestion_improvement)
             }
         } else {
             setError('Data tidak ditemukan. Silakan periksa kembali NIK atau nomor KTP Anda.')
         }
     }
 
-    const handleVote = (option: 'a' | 'b') => {
-        setSelectedOption(option)
-        setShowThumbsUpAnimation(true)
-        setTimeout(() => setShowThumbsUpAnimation(false), 2000)
-    }
-
     const submitVote = async () => {
-        if (!selectedOption || !currentParticipant) return
+        if (!currentParticipant) return
+
+        // Basic validation
+        if (!preferredToilet) {
+            setError('Mohon pilih toilet yang sering Anda gunakan (Pertanyaan No. 1).')
+            return
+        }
+        if (!reasonPreference.trim()) {
+            setError('Mohon isi alasan Anda memilih toilet tersebut (Pertanyaan No. 2).')
+            return
+        }
+        if (!nearestToilet.trim()) {
+            setError('Mohon isi toilet yang paling dekat dari gudang menurut Anda (Pertanyaan No. 3).')
+            return
+        }
+        if (!suggestionImprovement.trim()) {
+            setError('Mohon isi saran perbaikan yang Anda harapkan (Pertanyaan No. 4).')
+            return
+        }
 
         setIsSubmitting(true)
         setError('')
 
         try {
             const surveyUpdate = {
-                option_a: selectedOption === 'a',
-                option_b: selectedOption === 'b',
+                preferred_toilet: preferredToilet,
+                reason_preference: reasonPreference,
+                nearest_toilet: nearestToilet,
+                suggestion_improvement: suggestionImprovement,
                 date_verified: new Date().toISOString()
             }
 
@@ -177,7 +205,7 @@ export default function WarehouseToiletSurvey() {
 
             if (error) {
                 console.error('Supabase update error:', error)
-                setError('Error submitting vote. Please try again.')
+                setError('Error submitting survey. Please try again.')
             } else {
                 setStep('success')
             }
@@ -192,7 +220,10 @@ export default function WarehouseToiletSurvey() {
     const resetForm = () => {
         setInputValue('')
         setCurrentParticipant(null)
-        setSelectedOption(null)
+        setPreferredToilet('')
+        setReasonPreference('')
+        setNearestToilet('')
+        setSuggestionImprovement('')
         setError('')
         setStep('input')
     }
@@ -209,63 +240,122 @@ export default function WarehouseToiletSurvey() {
 
     return (
         <DefaultBackground showFooter={true}>
-            <ThumbsUpAnimation trigger={showThumbsUpAnimation} />
-
-            <div className="flex-1 flex flex-col justify-center px-3 sm:px-4 py-4">
-                <div className="max-w-sm mx-auto w-full">
+            <div className="flex-1 flex flex-col justify-center px-3 sm:px-4 py-8">
+                <div className="max-w-xl mx-auto w-full">
                     <SurveyHeader
                         Icon={Toilet}
                         title="Survey Toilet Warehouse"
-                        subtitle="Pendapat Anda meningkatkan kenyamanan toilet warehouse"
+                        subtitle="Masukan Anda sangat berharga untuk peningkatan fasilitas kami"
                     />
 
                     {/* Input Step */}
                     {step === 'input' && (
-                        <SurveyForm
-                            inputValue={inputValue}
-                            setInputValue={setInputValue}
-                            error={error}
-                            validateParticipant={validateParticipant}
-                            isLoading={isLoadingParticipants}
-                        />
+                        <div className="max-w-sm mx-auto w-full">
+                            <SurveyForm
+                                inputValue={inputValue}
+                                setInputValue={setInputValue}
+                                error={error}
+                                validateParticipant={validateParticipant}
+                                isLoading={isLoadingParticipants}
+                            />
+                        </div>
                     )}
 
                     {/* Voting Step */}
                     {step === 'voting' && currentParticipant && (
-                        <div className="space-y-3">
-                            <ParticipantInfo participant={currentParticipant} />
-
-                            <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/40 p-3">
-                                <p className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100">
-                                    Apakah perlu penambahan toilet?
-                                </p>
-                                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-0.5">
-                                    Pilih salah satu opsi di bawah ini.
-                                </p>
+                        <div className="space-y-6 mt-6">
+                            <div className="max-w-sm mx-auto w-full">
+                                <ParticipantInfo participant={currentParticipant} />
                             </div>
 
-                            <VotingOptionsToilet
-                                selectedOption={selectedOption}
-                                onVote={handleVote}
-                                isSubmitting={isSubmitting}
-                            />
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="space-y-6 bg-white/50 dark:bg-slate-900/50 p-6 rounded-xl border border-slate-200 dark:border-slate-800 backdrop-blur-sm shadow-sm"
+                            >
+                                {/* Question 1 */}
+                                <div className="space-y-3">
+                                    <Label className="text-base font-semibold text-slate-800 dark:text-slate-200">
+                                        1. Toilet mana yang sering Anda gunakan di tempat kerja? <span className="text-red-500">*</span>
+                                    </Label>
+                                    <RadioGroup value={preferredToilet} onValueChange={setPreferredToilet} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        {['Dekat Cutting', 'Lantai 3', 'Toilet Luar'].map((option) => (
+                                            <div key={option}>
+                                                <RadioGroupItem value={option} id={option} className="peer sr-only" />
+                                                <Label
+                                                    htmlFor={option}
+                                                    className="flex flex-col items-center justify-between rounded-md border-2 border-slate-200 bg-white p-4 hover:bg-slate-50 hover:text-slate-900 peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 peer-data-[state=checked]:text-blue-700 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900 dark:peer-data-[state=checked]:border-blue-400 dark:peer-data-[state=checked]:bg-blue-950/30 dark:peer-data-[state=checked]:text-blue-300 cursor-pointer transition-all"
+                                                >
+                                                    <span className="text-sm font-medium text-center">{option}</span>
+                                                    {preferredToilet === option && (
+                                                        <CheckCircle2 className="w-4 h-4 mt-2 text-blue-500" />
+                                                    )}
+                                                </Label>
+                                            </div>
+                                        ))}
+                                    </RadioGroup>
+                                </div>
 
-                            {error && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
-                                >
-                                    <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
-                                    <span className="text-xs sm:text-sm text-red-700 dark:text-red-400">{error}</span>
-                                </motion.div>
-                            )}
+                                {/* Question 2 */}
+                                <div className="space-y-3">
+                                    <Label htmlFor="q2" className="text-base font-semibold text-slate-800 dark:text-slate-200">
+                                        2. Mengapa Anda memilih untuk menggunakan toilet tersebut? <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Textarea
+                                        id="q2"
+                                        placeholder="Tuliskan alasan Anda..."
+                                        value={reasonPreference}
+                                        onChange={(e) => setReasonPreference(e.target.value)}
+                                        className="min-h-[80px]"
+                                    />
+                                </div>
 
-                            <SubmitButton
-                                selectedOption={selectedOption} // Note: SubmitButton might expect 'a'|'b'|'c'|'d', check type compat
-                                isSubmitting={isSubmitting}
-                                onSubmit={submitVote}
-                            />
+                                {/* Question 3 */}
+                                <div className="space-y-3">
+                                    <Label htmlFor="q3" className="text-base font-semibold text-slate-800 dark:text-slate-200">
+                                        3. Menurut Anda, toilet yang paling dekat dari gudang adalah? <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        id="q3"
+                                        placeholder="Jawaban Anda..."
+                                        value={nearestToilet}
+                                        onChange={(e) => setNearestToilet(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Question 4 */}
+                                <div className="space-y-3">
+                                    <Label htmlFor="q4" className="text-base font-semibold text-slate-800 dark:text-slate-200">
+                                        4. Perbaikan apa yang Anda harapkan dari toilet yang sudah tersedia saat ini? <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Textarea
+                                        id="q4"
+                                        placeholder="Saran perbaikan..."
+                                        value={suggestionImprovement}
+                                        onChange={(e) => setSuggestionImprovement(e.target.value)}
+                                        className="min-h-[80px]"
+                                    />
+                                </div>
+
+                                {error && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-600 dark:text-red-400"
+                                    >
+                                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                                        <span>{error}</span>
+                                    </motion.div>
+                                )}
+
+                                <SubmitButton
+                                    // @ts-ignore
+                                    selectedOption={preferredToilet ? 'a' : null}
+                                    isSubmitting={isSubmitting}
+                                    onSubmit={submitVote}
+                                    label="Kirim Jawaban"
+                                />
+                            </motion.div>
                         </div>
                     )}
 
