@@ -16,6 +16,8 @@ import {
 	Toilet,
 	Users,
 	MapPin,
+	Check,
+	X,
 } from "lucide-react"
 
 interface SurveyData {
@@ -25,6 +27,8 @@ interface SurveyData {
 	name: string
 	department: string
 	sex: string
+	option_a: boolean // Perlu
+	option_b: boolean // Tidak Perlu
 	preferred_toilet?: string
 	reason_preference?: string
 	nearest_toilet?: string
@@ -44,6 +48,11 @@ export default function Dashboard() {
 	const [totalNotVoted, setTotalNotVoted] = useState(0)
 	const [totalEmployees, setTotalEmployees] = useState(0)
 	const [percentageVoted, setPercentageVoted] = useState(0)
+
+	// Stats for Need / No Need
+	const [countNeed, setCountNeed] = useState(0)
+	const [countNoNeed, setCountNoNeed] = useState(0)
+
 	const [departments, setDepartments] = useState<string[]>([])
 
 	// Stats for Preferred Toilet
@@ -110,7 +119,7 @@ export default function Dashboard() {
 				if (isFirstLoad.current) setIsLoading(true)
 				let query = supabase
 					.from("survey_warehousetoilet_yongjinone")
-					.select("id, nik, ktp, name, department, sex, preferred_toilet, reason_preference, nearest_toilet, suggestion_improvement, date_verified", { count: "exact" })
+					.select("id, nik, ktp, name, department, sex, option_a, option_b, preferred_toilet, reason_preference, nearest_toilet, suggestion_improvement, date_verified", { count: "exact" })
 
 				if (search) {
 					query = query.or(`name.ilike.%${search}%,nik.ilike.%${search}%,ktp.ilike.%${search}%`)
@@ -158,7 +167,7 @@ export default function Dashboard() {
 
 				const { count: votedCount, data: votedData } = await supabase
 					.from("survey_warehousetoilet_yongjinone")
-					.select("preferred_toilet", { count: "exact" })
+					.select("preferred_toilet, option_a, option_b", { count: "exact" })
 					.not("date_verified", "is", null)
 
 				setTotalVoted(votedCount || 0)
@@ -170,14 +179,27 @@ export default function Dashboard() {
 					.is("date_verified", null)
 				setTotalNotVoted(notVotedCount || 0)
 
-				// Calculate stats for preferred toilet
+				// Calculate stats 
 				const stats: { [key: string]: number } = {}
+				let yes = 0
+				let no = 0
+
 				if (votedData) {
 					votedData.forEach((item: any) => {
-						const toilet = item.preferred_toilet || 'Unspecified'
-						stats[toilet] = (stats[toilet] || 0) + 1
+						if (item.option_a) {
+							yes++
+							// Only count preferred toilet if they voted yes (should be implicitly true but safe to check)
+							if (item.preferred_toilet) {
+								const toilet = item.preferred_toilet
+								stats[toilet] = (stats[toilet] || 0) + 1
+							}
+						} else if (item.option_b) {
+							no++
+						}
 					})
 				}
+				setCountNeed(yes)
+				setCountNoNeed(no)
 				setStatsPreferred(stats)
 
 			} catch (error) {
@@ -193,7 +215,7 @@ export default function Dashboard() {
 			try {
 				let query = supabase
 					.from("survey_warehousetoilet_yongjinone")
-					.select("id, nik, ktp, name, department, sex, preferred_toilet, reason_preference, nearest_toilet, suggestion_improvement, date_verified")
+					.select("id, nik, ktp, name, department, sex, option_a, option_b, preferred_toilet, reason_preference, nearest_toilet, suggestion_improvement, date_verified")
 
 				if (searchTerm) {
 					query = query.or(`name.ilike.%${searchTerm}%,nik.ilike.%${searchTerm}%,ktp.ilike.%${searchTerm}%`)
@@ -213,13 +235,18 @@ export default function Dashboard() {
 				if (error) throw error
 
 				const rows = [
-					["NIK", "KTP", "Nama", "Department", "Toilet Pilihan", "Alasan", "Toilet Terdekat (Persepsi)", "Saran", "Tanggal Verifikasi"],
+					["NIK", "KTP", "Nama", "Department", "Perlu Penambahan?", "Toilet Pilihan", "Alasan", "Toilet Terdekat (Persepsi)", "Saran", "Tanggal Verifikasi"],
 					...(data || []).map((d) => {
+						let perlu = "Belum Voting"
+						if (d.option_a) perlu = "Ya"
+						else if (d.option_b) perlu = "Tidak"
+
 						return [
 							d.nik,
 							d.ktp,
 							d.name,
 							d.department,
+							perlu,
 							d.preferred_toilet || "-",
 							`"${(d.reason_preference || "").replace(/"/g, '""')}"`, // Escape quotes for CSV
 							`"${(d.nearest_toilet || "").replace(/"/g, '""')}"`,
@@ -263,6 +290,11 @@ export default function Dashboard() {
 	}
 
 	const total = totalEmployees
+
+	// Percentages for cards
+	const pctNeed = totalVoted > 0 ? (countNeed / totalVoted) * 100 : 0
+	const pctNoNeed = totalVoted > 0 ? (countNoNeed / totalVoted) * 100 : 0
+
 
 	const totalPages = Math.ceil(totalRecords / itemsPerPage)
 	const startIndex = (currentPage - 1) * itemsPerPage
@@ -331,7 +363,8 @@ export default function Dashboard() {
 					</div>
 				</motion.div>
 
-				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+					{/* General Stats */}
 					<Card>
 						<CardContent className="p-6">
 							<div className="flex items-start justify-between">
@@ -369,10 +402,48 @@ export default function Dashboard() {
 						</CardContent>
 					</Card>
 
-					{/* Render stats for preferred toilets dynamically or hardcoded if specific ones needed */}
+					{/* Combined Need vs No Need */}
+					<Card>
+						<CardContent className="p-6">
+							<div className="space-y-4">
+								<p className="text-sm font-medium text-slate-600">Kebutuhan Penambahan Toilet</p>
+								<div className="grid grid-cols-2 gap-4">
+									<div>
+										<p className="text-sm text-slate-600">Perlu</p>
+										<p className="text-xl font-bold text-emerald-600">{countNeed}</p>
+										<p className="text-xs text-slate-500">{pctNeed.toFixed(1)}%</p>
+										<div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+											<motion.div
+												className="bg-emerald-600 h-1.5 rounded-full"
+												initial={{ width: 0 }}
+												animate={{ width: `${pctNeed}%` }}
+												transition={{ duration: 1 }}
+											/>
+										</div>
+									</div>
+									<div>
+										<p className="text-sm text-slate-600">Tidak Perlu</p>
+										<p className="text-xl font-bold text-red-600">{countNoNeed}</p>
+										<p className="text-xs text-slate-500">{pctNoNeed.toFixed(1)}%</p>
+										<div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+											<motion.div
+												className="bg-red-600 h-1.5 rounded-full"
+												initial={{ width: 0 }}
+												animate={{ width: `${pctNoNeed}%` }}
+												transition={{ duration: 1 }}
+											/>
+										</div>
+									</div>
+								</div>
+							</div>
+						</CardContent>
+					</Card>
+
+					{/* Preferred Toilet Stats */}
 					{['Dekat Cutting', 'Lantai 3', 'Toilet Luar'].map(option => {
 						const count = statsPreferred[option] || 0
-						const pct = totalVoted > 0 ? (count / totalVoted) * 100 : 0
+						// % relative to those who voted YES (countNeed)
+						const pct = countNeed > 0 ? (count / countNeed) * 100 : 0
 						return (
 							<Card key={option}>
 								<CardContent className="p-6">
@@ -380,7 +451,7 @@ export default function Dashboard() {
 										<div>
 											<p className="text-sm text-slate-600 line-clamp-1" title={option}>{option}</p>
 											<p className="text-2xl font-bold">{count}</p>
-											<p className="text-sm text-slate-500">{pct.toFixed(1)}%</p>
+											<p className="text-sm text-slate-500">{pct.toFixed(1)}% (of Yes)</p>
 											<div className="w-full bg-gray-200 rounded-full h-2 mt-2">
 												<motion.div
 													className="bg-indigo-600 h-2 rounded-full"
@@ -469,6 +540,7 @@ export default function Dashboard() {
 									<th className="p-3 text-left font-medium">No</th>
 									<th className="p-3 text-left font-medium">NIK/Nama</th>
 									<th className="p-3 text-left font-medium">Department</th>
+									<th className="p-3 text-left font-medium">Perlu?</th>
 									<th className="p-3 text-left font-medium">Toilet Pilihan</th>
 									<th className="p-3 text-left font-medium md:table-cell hidden">Alasan</th>
 									<th className="p-3 text-left font-medium md:table-cell hidden">Toilet Terdekat</th>
@@ -486,12 +558,23 @@ export default function Dashboard() {
 										</td>
 										<td className="p-3 align-top">{d.department}</td>
 										<td className="p-3 align-top">
+											{d.date_verified ? (
+												d.option_a ? (
+													<span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Ya</span>
+												) : d.option_b ? (
+													<span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Tidak</span>
+												) : <span className="text-slate-400">-</span>
+											) : (
+												<span className="text-slate-400">-</span>
+											)}
+										</td>
+										<td className="p-3 align-top">
 											{d.preferred_toilet ? (
 												<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
 													{d.preferred_toilet}
 												</span>
 											) : (
-												<span className="text-slate-400 italic">Belum mengisi</span>
+												<span className="text-slate-400 italic text-xs">{d.option_a ? 'Belum mengisi' : '-'}</span>
 											)}
 										</td>
 										<td className="p-3 align-top max-w-[200px] md:table-cell hidden text-slate-600 dark:text-slate-300 truncate" title={d.reason_preference}>
@@ -510,7 +593,7 @@ export default function Dashboard() {
 								))}
 								{surveyData.length === 0 && !isLoading && (
 									<tr>
-										<td colSpan={8} className="p-8 text-center text-slate-500">
+										<td colSpan={9} className="p-8 text-center text-slate-500">
 											Tidak ada data ditemukan.
 										</td>
 									</tr>
