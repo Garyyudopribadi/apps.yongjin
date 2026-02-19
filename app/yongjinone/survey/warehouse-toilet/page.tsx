@@ -29,9 +29,6 @@ export default function WarehouseToiletSurvey() {
     const [participants, setParticipants] = useState<Participant[]>([])
     const [isLoadingParticipants, setIsLoadingParticipants] = useState(true)
 
-    // Conditional Flow State
-    const [needToilet, setNeedToilet] = useState<'yes' | 'no' | null>(null)
-
     // New state for 4 detailed questions
     const [preferredToilet, setPreferredToilet] = useState<string>('')
     const [reasonPreference, setReasonPreference] = useState('')
@@ -147,7 +144,6 @@ export default function WarehouseToiletSurvey() {
             setStep('voting')
 
             // Reset form fields
-            setNeedToilet(null)
             setPreferredToilet('')
             setReasonPreference('')
             setNearestToilet('')
@@ -155,11 +151,6 @@ export default function WarehouseToiletSurvey() {
 
             // Pre-fill if already voted
             if (participant.date_verified) {
-                // @ts-ignore
-                if (participant.option_a) setNeedToilet('yes')
-                // @ts-ignore
-                else if (participant.option_b) setNeedToilet('no')
-
                 // @ts-ignore
                 if (participant.preferred_toilet) setPreferredToilet(participant.preferred_toilet)
                 // @ts-ignore
@@ -177,29 +168,21 @@ export default function WarehouseToiletSurvey() {
     const submitVote = async () => {
         if (!currentParticipant) return
 
-        if (!needToilet) {
-            setError('Mohon pilih apakah perlu penambahan toilet atau tidak.')
+        if (!preferredToilet) {
+            setError('Mohon pilih toilet yang sering Anda gunakan (Pertanyaan No. 1).')
             return
         }
-
-        // Validate detailed questions ONLY if needToilet is 'yes'
-        if (needToilet === 'yes') {
-            if (!preferredToilet) {
-                setError('Mohon pilih toilet yang sering Anda gunakan (Pertanyaan No. 1).')
-                return
-            }
-            if (!reasonPreference.trim()) {
-                setError('Mohon isi alasan Anda memilih toilet tersebut (Pertanyaan No. 2).')
-                return
-            }
-            if (!nearestToilet.trim()) {
-                setError('Mohon isi toilet yang paling dekat dari gudang menurut Anda (Pertanyaan No. 3).')
-                return
-            }
-            if (!suggestionImprovement.trim()) {
-                setError('Mohon isi saran perbaikan yang Anda harapkan (Pertanyaan No. 4).')
-                return
-            }
+        if (!reasonPreference.trim()) {
+            setError('Mohon isi alasan Anda memilih toilet tersebut (Pertanyaan No. 2).')
+            return
+        }
+        if (!nearestToilet.trim()) {
+            setError('Mohon isi toilet yang paling dekat dari gudang menurut Anda (Pertanyaan No. 3).')
+            return
+        }
+        if (!suggestionImprovement.trim()) {
+            setError('Mohon isi saran perbaikan yang Anda harapkan (Pertanyaan No. 4).')
+            return
         }
 
         setIsSubmitting(true)
@@ -207,12 +190,10 @@ export default function WarehouseToiletSurvey() {
 
         try {
             const surveyUpdate = {
-                option_a: needToilet === 'yes',
-                option_b: needToilet === 'no',
-                preferred_toilet: needToilet === 'yes' ? preferredToilet : null,
-                reason_preference: needToilet === 'yes' ? reasonPreference : null,
-                nearest_toilet: needToilet === 'yes' ? nearestToilet : null,
-                suggestion_improvement: needToilet === 'yes' ? suggestionImprovement : null,
+                preferred_toilet: preferredToilet,
+                reason_preference: reasonPreference,
+                nearest_toilet: nearestToilet,
+                suggestion_improvement: suggestionImprovement,
                 date_verified: new Date().toISOString()
             }
 
@@ -238,7 +219,6 @@ export default function WarehouseToiletSurvey() {
     const resetForm = () => {
         setInputValue('')
         setCurrentParticipant(null)
-        setNeedToilet(null)
         setPreferredToilet('')
         setReasonPreference('')
         setNearestToilet('')
@@ -292,110 +272,71 @@ export default function WarehouseToiletSurvey() {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="space-y-6 bg-white/50 dark:bg-slate-900/50 p-6 rounded-xl border border-slate-200 dark:border-slate-800 backdrop-blur-sm shadow-sm"
                             >
-                                {/* Initial Question: Need Toilet? */}
-                                <div className="space-y-4">
-                                    <RadioGroup value={needToilet || ''} onValueChange={(val: 'yes' | 'no') => setNeedToilet(val)} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <RadioGroupItem value="yes" id="need-yes" className="peer sr-only" />
-                                            <Label
-                                                htmlFor="need-yes"
-                                                className="flex flex-col items-center justify-between rounded-md border-2 border-slate-200 bg-white p-4 hover:bg-slate-50 hover:text-slate-900 peer-data-[state=checked]:border-green-500 peer-data-[state=checked]:bg-green-50 peer-data-[state=checked]:text-green-700 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900 dark:peer-data-[state=checked]:border-green-400 dark:peer-data-[state=checked]:bg-green-950/30 dark:peer-data-[state=checked]:text-green-300 cursor-pointer transition-all"
-                                            >
-                                                <span className="text-base font-bold">Ya, Perlu</span>
-                                                <span className="text-xs text-slate-500 mt-1">Lanjut ke pertanyaan detail</span>
-                                                {needToilet === 'yes' && (
-                                                    <CheckCircle2 className="w-5 h-5 mt-2 text-green-500" />
-                                                )}
-                                            </Label>
-                                        </div>
-                                        <div>
-                                            <RadioGroupItem value="no" id="need-no" className="peer sr-only" />
-                                            <Label
-                                                htmlFor="need-no"
-                                                className="flex flex-col items-center justify-between rounded-md border-2 border-slate-200 bg-white p-4 hover:bg-slate-50 hover:text-slate-900 peer-data-[state=checked]:border-red-500 peer-data-[state=checked]:bg-red-50 peer-data-[state=checked]:text-red-700 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900 dark:peer-data-[state=checked]:border-red-400 dark:peer-data-[state=checked]:bg-red-950/30 dark:peer-data-[state=checked]:text-red-300 cursor-pointer transition-all"
-                                            >
-                                                <span className="text-base font-bold">Tidak Perlu</span>
-                                                <span className="text-xs text-slate-500 mt-1">Selesai mengisi survey</span>
-                                                {needToilet === 'no' && (
-                                                    <CheckCircle2 className="w-5 h-5 mt-2 text-red-500" />
-                                                )}
-                                            </Label>
-                                        </div>
+                                {/* Direct Questions */}
+
+                                {/* Question 1 */}
+                                <div className="space-y-3">
+                                    <Label className="text-base font-semibold text-slate-800 dark:text-slate-200">
+                                        1. Toilet mana yang sering Anda gunakan di tempat kerja? <span className="text-red-500">*</span>
+                                    </Label>
+                                    <RadioGroup value={preferredToilet} onValueChange={setPreferredToilet} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        {['Toilet Cutting', 'Toilet Samping Downroom', 'Toilet Luar'].map((option) => (
+                                            <div key={option}>
+                                                <RadioGroupItem value={option} id={option} className="peer sr-only" />
+                                                <Label
+                                                    htmlFor={option}
+                                                    className="flex flex-col items-center justify-between rounded-md border-2 border-slate-200 bg-white p-4 hover:bg-slate-50 hover:text-slate-900 peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 peer-data-[state=checked]:text-blue-700 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900 dark:peer-data-[state=checked]:border-blue-400 dark:peer-data-[state=checked]:bg-blue-950/30 dark:peer-data-[state=checked]:text-blue-300 cursor-pointer transition-all"
+                                                >
+                                                    <span className="text-sm font-medium text-center">{option}</span>
+                                                    {preferredToilet === option && (
+                                                        <CheckCircle2 className="w-4 h-4 mt-2 text-blue-500" />
+                                                    )}
+                                                </Label>
+                                            </div>
+                                        ))}
                                     </RadioGroup>
                                 </div>
 
-                                {/* Detailed Questions - Only show if needToilet is 'yes' */}
-                                {needToilet === 'yes' && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        className="space-y-6 border-t border-slate-200 dark:border-slate-700 pt-6"
-                                    >
-                                        {/* Question 1 */}
-                                        <div className="space-y-3">
-                                            <Label className="text-base font-semibold text-slate-800 dark:text-slate-200">
-                                                1. Toilet mana yang sering Anda gunakan di tempat kerja? <span className="text-red-500">*</span>
-                                            </Label>
-                                            <RadioGroup value={preferredToilet} onValueChange={setPreferredToilet} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                                {['Toilet Cutting', 'Toilet Samping Downroom', 'Toilet Luar'].map((option) => (
-                                                    <div key={option}>
-                                                        <RadioGroupItem value={option} id={option} className="peer sr-only" />
-                                                        <Label
-                                                            htmlFor={option}
-                                                            className="flex flex-col items-center justify-between rounded-md border-2 border-slate-200 bg-white p-4 hover:bg-slate-50 hover:text-slate-900 peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 peer-data-[state=checked]:text-blue-700 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900 dark:peer-data-[state=checked]:border-blue-400 dark:peer-data-[state=checked]:bg-blue-950/30 dark:peer-data-[state=checked]:text-blue-300 cursor-pointer transition-all"
-                                                        >
-                                                            <span className="text-sm font-medium text-center">{option}</span>
-                                                            {preferredToilet === option && (
-                                                                <CheckCircle2 className="w-4 h-4 mt-2 text-blue-500" />
-                                                            )}
-                                                        </Label>
-                                                    </div>
-                                                ))}
-                                            </RadioGroup>
-                                        </div>
+                                {/* Question 2 */}
+                                <div className="space-y-3">
+                                    <Label htmlFor="q2" className="text-base font-semibold text-slate-800 dark:text-slate-200">
+                                        2. Mengapa Anda memilih untuk menggunakan toilet tersebut? <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Textarea
+                                        id="q2"
+                                        placeholder="Tuliskan alasan Anda..."
+                                        value={reasonPreference}
+                                        onChange={(e) => setReasonPreference(e.target.value)}
+                                        className="min-h-[80px]"
+                                    />
+                                </div>
 
-                                        {/* Question 2 */}
-                                        <div className="space-y-3">
-                                            <Label htmlFor="q2" className="text-base font-semibold text-slate-800 dark:text-slate-200">
-                                                2. Mengapa Anda memilih untuk menggunakan toilet tersebut? <span className="text-red-500">*</span>
-                                            </Label>
-                                            <Textarea
-                                                id="q2"
-                                                placeholder="Tuliskan alasan Anda..."
-                                                value={reasonPreference}
-                                                onChange={(e) => setReasonPreference(e.target.value)}
-                                                className="min-h-[80px]"
-                                            />
-                                        </div>
+                                {/* Question 3 */}
+                                <div className="space-y-3">
+                                    <Label htmlFor="q3" className="text-base font-semibold text-slate-800 dark:text-slate-200">
+                                        3. Menurut Anda, toilet yang paling dekat dari gudang adalah? <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        id="q3"
+                                        placeholder="Jawaban Anda..."
+                                        value={nearestToilet}
+                                        onChange={(e) => setNearestToilet(e.target.value)}
+                                    />
+                                </div>
 
-                                        {/* Question 3 */}
-                                        <div className="space-y-3">
-                                            <Label htmlFor="q3" className="text-base font-semibold text-slate-800 dark:text-slate-200">
-                                                3. Menurut Anda, toilet yang paling dekat dari gudang adalah? <span className="text-red-500">*</span>
-                                            </Label>
-                                            <Input
-                                                id="q3"
-                                                placeholder="Jawaban Anda..."
-                                                value={nearestToilet}
-                                                onChange={(e) => setNearestToilet(e.target.value)}
-                                            />
-                                        </div>
-
-                                        {/* Question 4 */}
-                                        <div className="space-y-3">
-                                            <Label htmlFor="q4" className="text-base font-semibold text-slate-800 dark:text-slate-200">
-                                                4. Perbaikan apa yang Anda harapkan dari toilet yang sudah tersedia saat ini? <span className="text-red-500">*</span>
-                                            </Label>
-                                            <Textarea
-                                                id="q4"
-                                                placeholder="Saran perbaikan..."
-                                                value={suggestionImprovement}
-                                                onChange={(e) => setSuggestionImprovement(e.target.value)}
-                                                className="min-h-[80px]"
-                                            />
-                                        </div>
-                                    </motion.div>
-                                )}
+                                {/* Question 4 */}
+                                <div className="space-y-3">
+                                    <Label htmlFor="q4" className="text-base font-semibold text-slate-800 dark:text-slate-200">
+                                        4. Perbaikan apa yang Anda harapkan dari toilet yang sudah tersedia saat ini? <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Textarea
+                                        id="q4"
+                                        placeholder="Saran perbaikan..."
+                                        value={suggestionImprovement}
+                                        onChange={(e) => setSuggestionImprovement(e.target.value)}
+                                        className="min-h-[80px]"
+                                    />
+                                </div>
 
                                 {error && (
                                     <motion.div
@@ -408,19 +349,13 @@ export default function WarehouseToiletSurvey() {
                                     </motion.div>
                                 )}
 
-                                {/* Show Submit Button if 'no' is selected OR 'yes' is selected and (optional check if valid) */}
-                                {needToilet && (
-                                    <SubmitButton
-                                        // @ts-ignore
-                                        selectedOption={needToilet === 'yes' ? (preferredToilet ? 'a' : null) : 'b'}
-                                        // Logic above: If yes, we need preferredToilet to act as 'valid' signal for existing button logic that checks selectedOption.
-                                        // Or we can just pass 'a' if needToilet is 'no'.
-                                        // Let's rely on validation in submitVote and just enable button if needToilet is set.
-                                        isSubmitting={isSubmitting}
-                                        onSubmit={submitVote}
-                                        label="Kirim Jawaban"
-                                    />
-                                )}
+                                <SubmitButton
+                                    // @ts-ignore
+                                    selectedOption={preferredToilet ? 'a' : null}
+                                    isSubmitting={isSubmitting}
+                                    onSubmit={submitVote}
+                                    label="Kirim Jawaban"
+                                />
                             </motion.div>
                         </div>
                     )}
