@@ -294,9 +294,6 @@ export default function WarehouseToiletSurvey() {
                             >
                                 {/* Initial Question: Need Toilet? */}
                                 <div className="space-y-4">
-                                    <Label className="text-lg font-bold text-slate-800 dark:text-slate-100">
-                                        Apakah perlu penambahan toilet? <span className="text-red-500">*</span>
-                                    </Label>
                                     <RadioGroup value={needToilet || ''} onValueChange={(val: 'yes' | 'no') => setNeedToilet(val)} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <RadioGroupItem value="yes" id="need-yes" className="peer sr-only" />
