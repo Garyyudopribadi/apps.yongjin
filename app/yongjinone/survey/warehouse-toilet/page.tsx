@@ -340,7 +340,7 @@ export default function WarehouseToiletSurvey() {
                                                 1. Toilet mana yang sering Anda gunakan di tempat kerja? <span className="text-red-500">*</span>
                                             </Label>
                                             <RadioGroup value={preferredToilet} onValueChange={setPreferredToilet} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                                {['Dekat Cutting', 'Lantai 3', 'Toilet Luar'].map((option) => (
+                                                {['Toilet Cutting', 'Toilet Samping Downroom', 'Toilet Luar'].map((option) => (
                                                     <div key={option}>
                                                         <RadioGroupItem value={option} id={option} className="peer sr-only" />
                                                         <Label
